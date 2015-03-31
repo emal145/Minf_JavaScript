@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head lang="de">
+    <meta charset="UTF-8">
+    <title>Mein kleines spielchen</title>
+</head>
+<body>
+
+<button onclick="startLoop()">start</button>
+<span id="x">X</span> <span id="y">Y</span>
+<span id="p1">X</span> <span id="p2">Y</span>
+<div id="game_object" style="position: relative;">
+    <canvas width='800px' height='500px' id="background_canvas" style="background: green; position:absolute; top: 0px; left: 0px">
+
+    </canvas>
+    <canvas width='800px' height='500px' id="main_canvas" style= "position: absolute; top: 0px; left: 0px;" onmousemove="mouse(event)">
+        Leider Nein aber bei dir kann man dat net spielen!
+    </canvas>
+</div>
+
+<script type="text/javascript" src="game.js"></script>
+
+</body>
+</html>
