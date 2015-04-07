@@ -31,16 +31,19 @@ function init()
     load_media();
 }
 
+//Laden der Bilder, Landschaft, Figur, Extras etc.
 function load_media()
 {
     bg_sprite = new Image();
-    bg_sprite.src = "images/bg_sprite.png";
+    bg_sprite.src = "images/Background-stadt_lang.png";
     box_sprite = new Image();
     box_sprite.src = "../../SuperStudent/images/Stift.png";
     main_sprite = new Image();
     main_sprite.src = "images/pilz.png";
 }
 
+
+//Event bei Tastendruck
 function key_down(e)
 {
     //  var key_id = e.keyCode || e.which;
@@ -71,6 +74,7 @@ function key_down(e)
 
 }
 
+//Event bei Taste loslassen bzw Taste ist ungedrückt
 function key_up(e)
 {
     //  var key_id = e.keyCode || e.which;
@@ -101,6 +105,7 @@ function key_up(e)
 
 }
 
+//Test um Mauskoordinaten auszulesen
 function mouse(e)
 {
     var x = e.pageX - document.getElementById("game_object").offsetLeft;
@@ -109,11 +114,8 @@ function mouse(e)
     document.getElementById("y").innerHTML = y;
 }
 
-function clear_main_canvas()
-{
 
-}
-
+//Beginn des Spieles, Schleife wird gestartet um bei Bewegen der Figuren Grafik neu zu zeichnen
 function startLoop()
 {
     isPlaying = true;
@@ -121,6 +123,7 @@ function startLoop()
     background_ctx.drawImage(bg_sprite, 0, 0);
 }
 
+//Stoppt die Spiel Schleife
 function stopLoop()
 {
     isPlaying = false;
@@ -131,6 +134,7 @@ var r_x = 0;
 var bgDrawX = 0;
 var supriseX = 200;
 
+
 function Suprise() {
     this.speed = 10;
 }
@@ -140,7 +144,7 @@ Suprise.prototype.draw = function()
 {
     this.drawX = supriseX
     this.ai();
-    main_ctx.drawImage(box_sprite, this.drawX, 300, 50, 8);
+    main_ctx.drawImage(box_sprite, this.drawX, 400, 50, 8);
 
 };
 
@@ -152,7 +156,7 @@ Suprise.prototype.ai = function () {
 function Player()
 {
     this.drawX = 50;
-    this.drawY = 400;
+    this.drawY = 430;
     this.speed = 10;
     this.is_downkey = false;
     this.is_upkey = false;
@@ -170,33 +174,48 @@ Player.prototype.draw = function()
 };
 
 Player.prototype.check_keys = function () {
+    var p1 = 50;
+    var b1 = supriseX + document.getElementById("game_object").offsetLeft;
+
     if (this.is_downkey == true){
 
+        //Wenn ausserhalb des bereichs der Suprise Box
         if((p1+50) < b1 || (p1+10) > (b1+box_sprite.width)) {
-            if(this.drawY<400)
+            //Nur soweit runter, wie die Figur in Starthöhe auch ist
+            //so dass die Figur immer auf dem Boden läuft und nich weiter runter kann
+            if(this.drawY<420)
                 this.drawY = this.drawY + 4;
         }
+        //..ansonsten wenn innerhalb des Bereichs
         else {
-            if (this.drawY > (300)) {
-                this.drawY = this.drawY - 4;
+            if (this.drawY > (400)) {
+                if (this.drawY < 430) {
+                    this.drawY = this.drawY + 4;
+                }
+            }
+            else if (this.drawY < (400 - main_sprite.height)) {
+                this.drawY = this.drawY + 4;
             }
         }
 
 
     }
 
-    if (this.is_upkey == true){
-       // var p1 = this.drawX - document.getElementById("game_object").offsetLeft;
+    if (this.is_upkey == true) {
+        // var p1 = this.drawX - document.getElementById("game_object").offsetLeft;
         //var b1 = supriseX - document.getElementById("game_object").offsetTop;
-        var p1 = 50;
-        var b1 = supriseX + document.getElementById("game_object").offsetLeft;
         document.getElementById("p1").innerHTML = p1;
         document.getElementById("p2").innerHTML = b1;
-        if((p1+50) < b1 || (p1+10) > (b1+box_sprite.width)) {
+        if ((p1 + 50) < b1 || (p1 + 10) > (b1 + box_sprite.width)) {
             this.drawY = this.drawY - 4;
         }
         else {
-            if (this.drawY > (300+box_sprite.height)) {
+            if(this.drawY > (400+box_sprite.height)) {
+                if (this.drawY > (400 + box_sprite.height)) {
+                    this.drawY = this.drawY - 4;
+                }
+            }
+            else if(this.drawY < 400) {
                 this.drawY = this.drawY - 4;
             }
         }
@@ -204,9 +223,11 @@ Player.prototype.check_keys = function () {
     }
 
     if (this.is_leftkey == true) {
-        this.drawX = this.drawX+2;
-        bgDrawX = bgDrawX+2;
-        supriseX = supriseX+2;
+        if(bgDrawX<0) {
+            bgDrawX = bgDrawX + 2;
+            this.drawX = this.drawX + 2;
+            supriseX = supriseX + 2;
+        }
     }
 
     if (this.is_rightkey == true){
@@ -218,12 +239,23 @@ Player.prototype.check_keys = function () {
 
 
     if(this.is_upkey == false) {
-        if (this.drawY<400) {
-            this.drawY = this.drawY+4;
+
+        if ((p1 + 50) < b1 || (p1+10) > (b1 + box_sprite.width)) {
+            if (this.drawY < 430) {
+                this.drawY = this.drawY + 4;
+            }
         }
-
+        else {
+            if (this.drawY > (400)) {
+                if (this.drawY < 430) {
+                    this.drawY = this.drawY + 4;
+                }
+            }
+            else if (this.drawY < (400 - main_sprite.height)) {
+                this.drawY = this.drawY + 4;
+            }
+        }
     }
-
 }
 
 function loop()
