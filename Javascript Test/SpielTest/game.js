@@ -37,9 +37,9 @@ function load_media()
     bg_sprite = new Image();
     bg_sprite.src = "images/Background-stadt_lang.png";
     box_sprite = new Image();
-    box_sprite.src = "../../SuperStudent/images/Stift.png";
+    box_sprite.src = "images/Stift.png";
     main_sprite = new Image();
-    main_sprite.src = "images/pilz.png";
+    main_sprite.src = "images/IMG_2210_Mini.png";
 }
 
 
@@ -156,7 +156,7 @@ Suprise.prototype.ai = function () {
 function Player()
 {
     this.drawX = 50;
-    this.drawY = 430;
+    this.drawY = 380;
     this.speed = 10;
     this.is_downkey = false;
     this.is_upkey = false;
@@ -166,7 +166,7 @@ function Player()
 Player.prototype.draw = function()
 {
     this.check_keys();
-    main_ctx.drawImage(main_sprite, 50, this.drawY, 50, 50);
+    main_ctx.drawImage(main_sprite, 50, this.drawY, 19, 100);
 
     background_ctx.drawImage(bg_sprite, bgDrawX, 0);
     // main_ctx.fillStyle = "red";
@@ -241,13 +241,13 @@ Player.prototype.check_keys = function () {
     if(this.is_upkey == false) {
 
         if ((p1 + 50) < b1 || (p1+10) > (b1 + box_sprite.width)) {
-            if (this.drawY < 430) {
+            if (this.drawY < 380) {
                 this.drawY = this.drawY + 4;
             }
         }
         else {
             if (this.drawY > (400)) {
-                if (this.drawY < 430) {
+                if (this.drawY < 380) {
                     this.drawY = this.drawY + 4;
                 }
             }
