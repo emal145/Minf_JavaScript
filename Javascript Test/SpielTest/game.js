@@ -39,7 +39,7 @@ function load_media()
     box_sprite = new Image();
     box_sprite.src = "../../SuperStudent/images/Stift.png";
     main_sprite = new Image();
-    main_sprite.src = "images/pilz.png;
+    main_sprite.src = "images/pilz.png";
 }
 
 
