@@ -1,0 +1,243 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+    <title>Phaser - Making your first game, part 9</title>
+    <script src="//cdn.jsdelivr.net/phaser/2.2.2/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+
+    game.load.image('ground', 'assets/Hintergrund-Start.jpg', 600, 600);
+    game.load.image('blue_sky1', 'assets/Blue_Sky1.jpg', 600, 600);
+    game.load.image('blue_sky2', 'assets/Blue_Sky2.jpg', 600, 600);
+    // game.load.image('ground', 'assets/platform.png');
+    game.load.image('star', 'assets/baloon.png');
+    game.load.spritesheet('dude', 'assets/Monster_Sprite.png', 100, 100, 16);
+    game.load.spritesheet('coin', 'assets/muenze.png', 200, 200, 8);
+
+}
+
+var player;
+var color = "red";
+var cursors;
+var colorKey;
+var bg_sprite_sky1;
+var bg_sprite_sky2;
+var speed = 2;
+var stars;
+var coins;
+var score = 0;
+var scoreText;
+
+
+function create() {
+
+    //  We're going to be using physics, so enable the Arcade Physics system
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+
+    //  A simple background for our game
+    bg_Sprite_start = game.add.sprite(0, 0, 'ground');
+    bg_sprite_sky1 = game.add.sprite(0, -600, 'blue_sky1');
+    bg_sprite_sky2 = game.add.sprite(0, -1200, 'blue_sky2');
+
+   // The player and its settings
+    player = game.add.sprite(225, game.world.height - 150, 'dude');
+
+    //  We need to enable physics on the player
+    game.physics.arcade.enable(player);
+
+    //  Player physics properties. Give the little guy a slight bounce.
+    player.body.gravity.y = 100;
+
+    //  Our two animations, walking left and right.
+    player.animations.add('red_left', [2], true);
+    player.animations.add('red_right', [1], true);
+
+    player.animations.add('blue_left', [6], true);
+    player.animations.add('blue_right', [5], true);
+
+    //  Finally some stars to collect
+    stars = game.add.group();
+
+    //  We will enable physics for any star that is created in this group
+    stars.enableBody = true;
+
+    createBalloons(true);
+
+//  Finally some stars to collect
+    coins = game.add.group();
+
+    //  We will enable physics for any star that is created in this group
+    coins.enableBody = true;
+
+    createCoins(true);
+
+    //  The score
+    scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+
+    //  Our controls.
+    cursors = game.input.keyboard.createCursorKeys();
+    //  Our controls.
+    colorKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACE_BAR);
+
+}
+
+function update() {
+ //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
+    game.physics.arcade.overlap(player, stars, collectStar, null, this);
+
+    game.physics.arcade.overlap(player, coins, collectCoin, null, this);
+
+    //  Reset the players velocity (movement)
+    player.body.velocity.x = 0;
+
+    if(colorKey.isDown){
+        if(color == "red"){
+            color = "blue";
+        }
+    }
+
+    if (cursors.left.isDown)
+    {
+        //  Move to the left
+        player.body.velocity.x = -(speed+150);
+
+            player.animations.play('red_left');
+
+    }
+    else if (cursors.right.isDown)
+    {
+        //  Move to the right
+        player.body.velocity.x = speed+150;
+
+        player.animations.play('blue_right');
+    }
+    else
+    {
+        //  Stand still
+        player.animations.stop();
+        player.frame = 3;
+    }
+    
+    if(player.y > 300){
+        player.body.velocity.y = -100;
+    }
+
+    stars.setAll('gravity.y', (speed+150));
+    coins.setAll('gravity.y', (speed+150));
+
+
+    bg_Sprite_start.y += speed;
+    bg_sprite_sky1.y += speed;
+    bg_sprite_sky2.y += speed;
+
+
+    if(bg_sprite_sky1.y >= 600) {
+        bg_sprite_sky1.y = -(600 - (bg_sprite_sky1.y - 600));
+        createBalloons(false);
+        createCoins(false);
+
+    }
+
+    if(bg_sprite_sky2.y >= 600){
+        bg_sprite_sky2.y = -(600-(bg_sprite_sky2.y - 600));
+        createBalloons(false);
+        createCoins(false);
+    }
+
+}
+
+function createBalloons(start){
+    for (var i = 0; i < 5; i++)
+    {
+         //Zahl zwischen 1 und 100
+        randomFactorX = Math.floor((Math.random() * 100) + 1);
+        randomFactorY = Math.floor((Math.random() * 100) + 1);
+
+        randomX = Math.floor((Math.random() * 1000) + randomFactorX);
+        randomY = Math.floor(-1 * ((Math.random() * 1000) + randomFactorY));
+
+        if(randomX > 600){
+            randomX -= (randomX-600);
+        }
+
+        if(start == true){
+            randomY += 300;
+        }
+
+        var star = stars.create(randomX, randomY, 'star');
+        star.scale.set(1.5, 1.5);
+        //  Let gravity do its thing
+        star.body.gravity.y = speed+150;
+    }
+
+}
+
+function createCoins(start){
+    for (var i = 0; i < 20; i++)
+    {
+        //Zahl zwischen 1 und 100
+        randomFactorX = Math.floor((Math.random() * 100) + 1);
+        randomFactorY = Math.floor((Math.random() * 100) + 1);
+
+        randomX = Math.floor((Math.random() * 1000) + randomFactorX);
+        randomY = Math.floor(-1 * ((Math.random() * 1000) + randomFactorY));
+
+        if(randomX > 600){
+            randomX -= (randomX-600);
+        }
+
+        if(start == true){
+            randomY += 300;
+        }
+
+        var coin = coins.create(randomX, randomY, 'coin');
+
+        coin.scale.set(0.2, 0.2);
+        //  Let gravity do its thing
+
+        coin.body.gravity.y = speed+150;
+        coin.animations.add('spin', [0,1,2,3,4,5,6,7], true);
+        coin.animations.play('spin', 10, true);
+    }
+
+}
+
+function collectStar (player, star) {
+
+    // Removes the star from the screen
+    star.kill();
+
+    speed += 0.2;
+    //  Add and update the score
+    score += 10;
+    scoreText.text = 'Score: ' + parseInt(score);
+
+}
+function collectCoin (player, coin) {
+
+    // Removes the star from the screen
+    coin.kill();
+
+     //  Add and update the score
+    score += speed*2;
+    scoreText.text = 'Score: ' + parseInt(score);
+
+}
+
+</script>
+
+</body>
+</html>
