@@ -22,7 +22,7 @@ function preload() {
     game.load.image('blue_sky1', 'assets/Blue_Sky1.jpg', 600, 600);
     game.load.image('blue_sky2', 'assets/Blue_Sky2.jpg', 600, 600);
     // game.load.image('ground', 'assets/platform.png');
-    game.load.image('star', 'assets/baloon.png');
+    game.load.image('balloon', 'assets/baloon.png');
     game.load.spritesheet('dude', 'assets/Monster_Sprite.png', 100, 100, 16);
     game.load.spritesheet('coin', 'assets/muenze.png', 200, 200, 8);
 
@@ -35,7 +35,7 @@ var colorKey;
 var bg_sprite_sky1;
 var bg_sprite_sky2;
 var speed = 2;
-var stars;
+var balloons;
 var coins;
 var score = 0;
 var scoreText;
@@ -69,10 +69,10 @@ function create() {
     player.animations.add('blue_right', [5], true);
 
     //  Finally some stars to collect
-    stars = game.add.group();
+    balloons = game.add.group();
 
     //  We will enable physics for any star that is created in this group
-    stars.enableBody = true;
+    balloons.enableBody = true;
 
     createBalloons(true);
 
@@ -96,8 +96,7 @@ function create() {
 
 function update() {
  //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
-    game.physics.arcade.overlap(player, stars, collectStar, null, this);
-
+    game.physics.arcade.overlap(player, balloons, collectBalloon, null, this);
     game.physics.arcade.overlap(player, coins, collectCoin, null, this);
 
     //  Reset the players velocity (movement)
@@ -120,7 +119,7 @@ function update() {
     else if (cursors.right.isDown)
     {
         //  Move to the right
-        player.body.velocity.x = speed+150;
+        player.body.velocity.x = 100;
 
         player.animations.play('blue_right');
     }
@@ -135,8 +134,11 @@ function update() {
         player.body.velocity.y = -100;
     }
 
-    stars.setAll('gravity.y', (speed+150));
-    coins.setAll('gravity.y', (speed+150));
+
+
+    for(i = 0; i < coins.children.length; i ++){
+        coins.children[i].y += speed;
+    }
 
 
     bg_Sprite_start.y += speed;
@@ -157,6 +159,35 @@ function update() {
         createCoins(false);
     }
 
+    balloonsOutOfFrame();
+}
+
+function balloonsOutOfFrame(){
+    for(i = 0; i < balloons.children.length; i++) {
+        balloons.children[i].y += speed;
+        if (balloons.children[i].y > 600 || balloons.children[i].x > 600) {
+            balloons.children[i].kill();
+            balloons.children[i].destroy();
+       }
+    }
+    cleanUp();
+
+}
+
+function cleanUp(){
+    var aCleanup = [];
+    balloons.forEachDead(function(item){
+        aCleanup.push(item);
+    });
+
+    var i = aCleanup.length - 1;
+    while(i > -1)
+    {
+        var getitem = aCleanup[i];
+        getitem.destroy();
+        i--;
+    }
+    console.log(balloons.children.length);
 }
 
 function createBalloons(start){
@@ -177,13 +208,15 @@ function createBalloons(start){
             randomY += 300;
         }
 
-        var star = stars.create(randomX, randomY, 'star');
-        star.scale.set(1.5, 1.5);
+        var balloon = balloons.create(randomX, randomY, 'balloon');
+        balloon.scale.set(1.5, 1.5);
         //  Let gravity do its thing
-        star.body.gravity.y = speed+150;
+        //balloon.body.gravity.y = speed+150;
+        console.log("balloon speed: " + balloon.body.gravity.y);
     }
 
 }
+
 
 function createCoins(start){
     for (var i = 0; i < 20; i++)
@@ -208,18 +241,18 @@ function createCoins(start){
         coin.scale.set(0.2, 0.2);
         //  Let gravity do its thing
 
-        coin.body.gravity.y = speed+150;
         coin.animations.add('spin', [0,1,2,3,4,5,6,7], true);
         coin.animations.play('spin', 10, true);
     }
 
 }
 
-function collectStar (player, star) {
+function collectBalloon (player, balloon) {
 
     // Removes the star from the screen
-    star.kill();
-
+    balloon.kill();
+    balloon.destroy();
+    cleanUp();
     speed += 0.2;
     //  Add and update the score
     score += 10;
@@ -230,8 +263,7 @@ function collectCoin (player, coin) {
 
     // Removes the star from the screen
     coin.kill();
-
-     //  Add and update the score
+    //  Add and update the score
     score += speed*2;
     scoreText.text = 'Score: ' + parseInt(score);
 
