@@ -8,9 +8,14 @@
         body {
             margin: 0;
         }
+        label{
+            font-size: 60px;
+            color: red;
+        }
     </style>
 </head>
 <body>
+<label id="over"></label>
 
 <script type="text/javascript">
 
@@ -48,13 +53,17 @@ var resizeBalloon;
 var resizeBalloon2;
 var size = 0.5;
 var gameOverText;
-
+var filter;
+var sprite;
+var spacedUp = false;
+var tempo = 0;
 
 function create() {
     //  We're going to be using physics, so enable the Arcade Physics system
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     createBackgrounds();
+    createFilter();
     createResizableBalloon();
     createPlayer();
 
@@ -83,8 +92,100 @@ function create() {
     colorKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     colorKey.onDown.add(processKey, this);
     this.shift = this.game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+    // By: Brandon Fogerty
+    // bfogerty at gmail dot com
+
+
 }
 
+function createFilter(){
+    var fragmentRainbowSrc = [
+        "precision mediump float;",
+        "uniform vec2      resolution;",
+        "uniform float     time;",
+
+        "void main( void )",
+        "{",
+        "vec2 p = ( gl_FragCoord.xy / resolution.xy ) * 2.0 - 1.0;",
+
+        "vec3 c = vec3( 0.0 );",
+
+        "float amplitude = 0.50;",
+        "float glowT = sin(time) * 0.5 + 0.5;",
+        "float glowFactor = mix( 0.15, 0.35, glowT );",
+
+        "c += vec3(0.02, 0.03, 0.13) * ( glowFactor * abs( 1.0 / sin(p.x + sin( p.y + time ) * amplitude ) ));",
+        "c += vec3(0.02, 0.10, 0.03) * ( glowFactor * abs( 1.0 / sin(p.x + cos( p.y + time+1.00 ) * amplitude+0.1 ) ));",
+        "c += vec3(0.15, 0.05, 0.20) * ( glowFactor * abs( 1.0 / sin(p.y + sin( p.x + time+1.30 ) * amplitude+0.15 ) ));",
+        "c += vec3(0.20, 0.05, 0.05) * ( glowFactor * abs( 1.0 / sin(p.y + cos( p.x + time+3.00 ) * amplitude+0.3 ) ));",
+        "c += vec3(0.17, 0.17, 0.05) * ( glowFactor * abs( 1.0 / sin(p.y + cos( p.x + time+5.00 ) * amplitude+0.2 ) ));",
+
+        "gl_FragColor = vec4( c, 1.0 );",
+        "}"
+    ];
+
+    var fragmentGalaxySrc = [
+
+        "precision mediump float;",
+
+        "uniform float     time;",
+        "uniform vec2      resolution;",
+        "uniform vec2      mouse;",
+
+        "// https://www.shadertoy.com/view/MdXSzS",
+
+        "void main()",
+        "{",
+        "vec2 uv = (gl_FragCoord.xy/resolution.xy)-.5;",
+
+        "float time = time * .1 + ((.25+.05*sin(time*.1))/(length(uv.xy)+.07))* 2.2;",
+        "float si = sin(time);",
+        "float co = cos(time);",
+        "mat2 ma = mat2(co, si, -si, co);",
+
+        "float c = 0.0;",
+        "float v1 = 0.0;",
+        "float v2 = 0.0;",
+
+        "for (int i = 0; i < 100; i++)",
+        "{",
+        "float s = float(i) * .035;",
+        "vec3 p = s * vec3(uv, 0.0);",
+        "p.xy *= ma;",
+        "p += vec3(.22,.3, s-1.5-sin(time*.13)*.1);",
+        "for (int i = 0; i < 8; i++)",
+        "{",
+        "p = abs(p) / dot(p,p) - 0.659;",
+        "}",
+        "v1 += dot(p,p)*.0015 * (1.8+sin(length(uv.xy*13.0)+.5-time*.2));",
+        "v2 += dot(p,p)*.0015 * (1.5+sin(length(uv.xy*13.5)+2.2-time*.3));",
+        "c = length(p.xy*.5) * .35;",
+        "}",
+
+        "float len = length(uv);",
+        "v1 *= smoothstep(.7, .0, len);",
+        "v2 *= smoothstep(.6, .0, len);",
+
+        "float re = clamp(c, 0.0, 1.0);",
+        "float gr = clamp((v1+c)*.25, 0.0, 1.0);",
+        "float bl = clamp(v2, 0.0, 1.0);",
+        "vec3 col = vec3(re, gr, bl) + smoothstep(0.15, .0, len) * .9;",
+
+        "gl_FragColor=vec4(col, 1.0);",
+        "}"
+    ];
+
+    filter = new Phaser.Filter(game, null, fragmentGalaxySrc);
+    filter.setResolution(600, 600);
+    sprite = game.add.sprite();
+    game.physics.arcade.enable(sprite);
+
+    sprite.width = 600;
+    sprite.height = 600;
+
+    sprite.filters = [ filter ];
+    sprite.visible = false;
+}
 
 function createPlayer(){
     // The player and its settings
@@ -107,6 +208,25 @@ function createPlayer(){
 
     player.animations.add('yellow_left', [14], true);
     player.animations.add('yellow_right', [13], true);
+
+    player.checkWorldBounds = true;
+    player.events.onOutOfBounds.add(playerOut, player);
+
+    console.log("w: " + player.body.width + "x: " + player.x);
+    console.log("h: " + player.body.height + "y: " + player.y);
+
+}
+
+function playerOut(player){
+    if(player.x > 600){
+        player.x = -5;
+        resizeBalloon.x = (player.x+73) - parseFloat(resizeBalloon.width/2);
+        resizeBalloon.y = (player.y - 29) - resizeBalloon.height;
+
+        resizeBalloon2.x = player.x + 63;
+        resizeBalloon2.y = player.y - 30;
+    }
+
 }
 
 function createResizableBalloon(){
@@ -116,9 +236,12 @@ function createResizableBalloon(){
     resizeBalloon.x = 298 - parseFloat(resizeBalloon.width/2);
     resizeBalloon.y = 421 - resizeBalloon.height;
     resizeBalloon.body.gravity.y = 100;
+    console.log("w: " + resizeBalloon.width + "x: " + resizeBalloon.x);
+    console.log("h: " + resizeBalloon.height + "y: " + resizeBalloon.y);
 
     resizeBalloon2 = game.add.sprite(288, game.world.height - 180, 'resizeBalloon2');
     game.physics.arcade.enable(resizeBalloon2);
+
     resizeBalloon2.scale.set(0.5, 0.5);
     resizeBalloon2.body.gravity.y = 100;
 
@@ -167,11 +290,15 @@ function update() {
     resizeBalloon.body.velocity.x = 0;
     resizeBalloon2.body.velocity.x = 0;
 
-    if (this.cursor.up.isDown) {
-        if(this.shift.isDown && this.cursor.down.isDown){
+    if(this.shift.isDown){
+        scrollBackground(true);
+    }
+    else if (this.cursor.up.isDown) {
+        if(this.shift.isDown && this.cursor.up.isDown){
             player.body.y -= 10;
             resizeBalloon.y -= 10;
             resizeBalloon2.y -= 10;
+            scrollBackground(true);
         }
         else {
             player.y -= 5;
@@ -215,30 +342,16 @@ function update() {
         resizeBalloon2.body.velocity.x = -(speed+150);
 
     }
-    else if (this.cursor.right.isDown)
-    {
-        if(this.shift.isDown && this.cursor.right.isDown){
+    else if (this.cursor.right.isDown) {
+        if (this.shift.isDown && this.cursor.right.isDown) {
             player.body.x += 10;
             resizeBalloon.x += 10;
             resizeBalloon2.x += 10;
         }
-        //  Move to the right
-        player.body.velocity.x = 100;
-        resizeBalloon.body.velocity.x = 100;
-        resizeBalloon2.body.velocity.x = 100;
-
-        if(color == "red"){
-            player.animations.play('red_right');
-        }
-        else if(color == "blue"){
-            player.animations.play('blue_right');
-        }
-        else if(color == "yellow"){
-            player.animations.play('yellow_right');
-        }
-        else if(color == "green"){
-            player.animations.play('green_right');
-        }
+//  Move to the right
+            player.body.velocity.x = 100;
+            resizeBalloon.body.velocity.x = 100;
+            resizeBalloon2.body.velocity.x = 100;
     }
     else
     {
@@ -257,23 +370,43 @@ function update() {
             player.frame = 15;
         }
     }
-
-
+        if(color == "red"){
+            player.animations.play('red_right');
+        }
+        else if(color == "blue"){
+            player.animations.play('blue_right');
+        }
+        else if(color == "yellow"){
+            player.animations.play('yellow_right');
+        }
+        else if(color == "green"){
+            player.animations.play('green_right');
+        }
 
     scrollBackground();
 
     balloonsOutOfFrame();
     coinsOutOfFrame();
+    if(spacedUp == true){
+        filter.update();
+        filter.visibility = visible;
+    }
 }
 
-function scrollBackground(){
-
-    if(bg_start.y < 603) {
-        bg_start.y += speed;
+function scrollBackground(fast){
+   if(fast == true){
+       tempo = 1;
+    }
+    else{
+        tempo = 0;
     }
 
-    bg_clouds1.y += speed;
-    bg_clouds2.y += speed;
+    if(bg_start.y < 603) {
+        bg_start.y += speed + tempo;
+    }
+
+    bg_clouds1.y += speed + tempo;
+    bg_clouds2.y += speed + tempo;
 
     if(bg_clouds1.y >= 1200) {
         bg_clouds1.y = -(1200 - (bg_clouds1.y - 1200));
@@ -290,7 +423,7 @@ function scrollBackground(){
 
 function balloonsOutOfFrame(){
     for(i = 0; i < balloons.children.length; i++) {
-        balloons.children[i].y += speed;
+        balloons.children[i].y += speed + tempo;
         if (balloons.children[i].y > 600 || balloons.children[i].x > 600) {
             balloons.children[i].kill();
             balloons.children[i].destroy();
@@ -302,7 +435,7 @@ function balloonsOutOfFrame(){
 
 function coinsOutOfFrame(){
     for(i = 0; i < coins.children.length; i++) {
-        coins.children[i].y += speed;
+        coins.children[i].y += speed + tempo;
         if (coins.children[i].y > 600 || coins.children[i].x > 600) {
             coins.children[i].kill();
             coins.children[i].destroy();
@@ -311,6 +444,7 @@ function coinsOutOfFrame(){
     cleanUpCoins;
 
 }
+
 function setMonsterColor(){
     if(color == "red"){
         player.animations.play('red_left');
@@ -464,7 +598,7 @@ function scaleBalloon(bigger){
     else{
         size -= 0.1;
     }
-    if(size > 0.0){
+    if(size > 0.1){
     resizeBalloon.scale.set(size, size);
     resizeBalloon.x = (player.x+73) - parseFloat(resizeBalloon.width/2);
     resizeBalloon.y = (player.y - 29) - resizeBalloon.height;
@@ -489,13 +623,11 @@ function collectCoin (player, coin) {
 }
 
 function quitGame(){
-    gameOverText = game.add.text(200, 300, 'score: 0', { fontSize: '60px', fill: '#ffffff' });
-
+    document.getElementById("over").innerHTML = "GAME OVER!";
     game.destroy();
 
 }
 
 </script>
-
 </body>
 </html>
