@@ -220,12 +220,16 @@ function createPlayer(){
 function playerOut(player){
     if(player.x > 600){
         player.x = -5;
-        resizeBalloon.x = (player.x+73) - parseFloat(resizeBalloon.width/2);
-        resizeBalloon.y = (player.y - 29) - resizeBalloon.height;
-
-        resizeBalloon2.x = player.x + 63;
-        resizeBalloon2.y = player.y - 30;
     }
+    else{
+        player.x = 595;
+    }
+
+    resizeBalloon.x = (player.x+73) - parseFloat(resizeBalloon.width/2);
+    resizeBalloon.y = (player.y - 29) - resizeBalloon.height;
+
+    resizeBalloon2.x = player.x + 63;
+    resizeBalloon2.y = player.y - 30;
 
 }
 
