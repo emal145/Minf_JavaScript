@@ -2,8 +2,8 @@
 <html lang="en"> 
 <head> 
 	<meta charset="UTF-8" />
-    <title>Phaser - Making your first game, part 9</title>
-    <script src="//cdn.jsdelivr.net/phaser/2.2.2/phaser.min.js"></script>
+    <title>Flying Monster</title>
+    <script src="assets/phaser.min.js"></script>
     <style type="text/css">
         body {
             margin: 0;
@@ -14,7 +14,7 @@
 
 <script type="text/javascript">
 
-var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update, quitGame: quitGame});
 
 function preload() {
 
@@ -23,6 +23,9 @@ function preload() {
     game.load.image('clouds1', 'assets/clouds1.jpg', 600, 1200);
     game.load.image('clouds2', 'assets/clouds2.jpg', 600, 1200);
     game.load.image('dark_sky', 'assets/sky_dark.jpg', 600, 600);
+
+    game.load.image('resizeBalloon', 'assets/resizeBalloon.png', 144, 188, 1);
+    game.load.image('resizeBalloon2', 'assets/resizeBalloon2.png', 40, 144, 1);
 
     game.load.spritesheet('colored_balloon', 'assets/baloons.png', 100,200, 12);
     game.load.spritesheet('dude', 'assets/Monster_Sprite.png', 100, 100, 16);
@@ -41,60 +44,32 @@ var balloons;
 var coins;
 var score = 0;
 var scoreText;
+var resizeBalloon;
+var resizeBalloon2;
+var size = 0.5;
+var gameOverText;
 
 
 function create() {
-
     //  We're going to be using physics, so enable the Arcade Physics system
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    createBackgrounds();
+    createResizableBalloon();
+    createPlayer();
 
-    //  A simple background for our game
-
-    bg_start = game.add.image(0, 0, 'ground');
-    bg_clouds1 = game.add.image(0, -1200, 'clouds1');
-    bg_clouds2 = game.add.image(0, -2400, 'clouds2');
-    bg_sky = game.add.image(0, -600, 'blue_sky');
-    bg_sky_dark = game.add.image(0, -1200, 'dark_sky');
-   // The player and its settings
-    player = game.add.sprite(225, game.world.height - 150, 'dude');
-    //bg_Sprite_start = game.add.sprite(0, 0, 'background');
-
-
-    //  We need to enable physics on the player
-    game.physics.arcade.enable(player);
-
-    //  Player physics properties. Give the little guy a slight bounce.
-    player.body.gravity.y = 100;
-
-
-    //  Our two animations, walking left and right.
-    player.animations.add('red_left', [2], true);
-    player.animations.add('red_right', [1], true);
-
-    player.animations.add('blue_left', [6], true);
-    player.animations.add('blue_right', [5], true);
-
-    player.animations.add('yellow_left', [10], true);
-    player.animations.add('yellow_right', [9], true);
-
-    player.animations.add('green_left', [14], true);
-    player.animations.add('green_right', [13], true);
 
     //  Finally some stars to collect
     balloons = game.add.group();
-
     //  We will enable physics for any star that is created in this group
     balloons.enableBody = true;
-
     createBalloons(true);
-//  Finally some stars to collect
+
+    //  Finally some stars to collect
     coins = game.add.group();
-
-    //  We will enable physics for any star that is created in this group
     coins.enableBody = true;
-
     createCoins(true);
+
 
     createBalloons(false);
     createCoins(false);
@@ -103,10 +78,61 @@ function create() {
     scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
     //  Our controls.
-    cursors = game.input.keyboard.createCursorKeys();
+   this.cursor = game.input.keyboard.createCursorKeys();
     //  Our controls.
     colorKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     colorKey.onDown.add(processKey, this);
+    this.shift = this.game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+}
+
+
+function createPlayer(){
+    // The player and its settings
+    player = game.add.sprite(225, game.world.height - 150, 'dude');
+ //  We need to enable physics on the player
+    game.physics.arcade.enable(player);
+
+    //  Player physics properties. Give the little guy a slight bounce.
+    player.body.gravity.y = 100;
+
+    //  Our two animations, walking left and right.
+    player.animations.add('red_left', [2], true);
+    player.animations.add('red_right', [1], true);
+
+    player.animations.add('blue_left', [6], true);
+    player.animations.add('blue_right', [5], true);
+
+    player.animations.add('green_left', [10], true);
+    player.animations.add('green_right', [9], true);
+
+    player.animations.add('yellow_left', [14], true);
+    player.animations.add('yellow_right', [13], true);
+}
+
+function createResizableBalloon(){
+    resizeBalloon = game.add.sprite(226, 233, 'resizeBalloon');
+    game.physics.arcade.enable(resizeBalloon);
+    resizeBalloon.scale.set(size, size);
+    resizeBalloon.x = 298 - parseFloat(resizeBalloon.width/2);
+    resizeBalloon.y = 421 - resizeBalloon.height;
+    resizeBalloon.body.gravity.y = 100;
+
+    resizeBalloon2 = game.add.sprite(288, game.world.height - 180, 'resizeBalloon2');
+    game.physics.arcade.enable(resizeBalloon2);
+    resizeBalloon2.scale.set(0.5, 0.5);
+    resizeBalloon2.body.gravity.y = 100;
+
+
+}
+
+function createBackgrounds(){
+    //  A simple background for our game
+    bg_start = game.add.image(0, 0, 'ground');
+    bg_clouds1 = game.add.image(0, -1200, 'clouds1');
+    bg_clouds2 = game.add.image(0, -2400, 'clouds2');
+    bg_sky = game.add.image(0, -600, 'blue_sky');
+    bg_sky_dark = game.add.image(0, -1200, 'dark_sky');
+
 }
 
 function processKey(key) {
@@ -124,41 +150,82 @@ function processKey(key) {
         else if(color == "green"){
             color = "red";
         }
+        setMonsterColor();
     }
 
 }
 
 function update() {
  //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
+    game.physics.arcade.overlap(resizeBalloon, balloons, collectBalloon, null, this);
+    game.physics.arcade.overlap(resizeBalloon, coins, collectCoin, null, this);
     game.physics.arcade.overlap(player, balloons, collectBalloon, null, this);
     game.physics.arcade.overlap(player, coins, collectCoin, null, this);
 
     //  Reset the players velocity (movement)
     player.body.velocity.x = 0;
+    resizeBalloon.body.velocity.x = 0;
+    resizeBalloon2.body.velocity.x = 0;
 
-    if (cursors.left.isDown)
+    if (this.cursor.up.isDown) {
+        if(this.shift.isDown && this.cursor.down.isDown){
+            player.body.y -= 10;
+            resizeBalloon.y -= 10;
+            resizeBalloon2.y -= 10;
+        }
+        else {
+            player.y -= 5;
+            resizeBalloon.y -= 5;
+            resizeBalloon2.y -= 5;
+        }
+    }
+    else if(this.cursor.down.isDown)
     {
-        //  Move to the left
-        player.body.velocity.x = -(speed+150);
-
-        if(color == "red"){
-            player.animations.play('red_left');
+        if(this.shift.isDown && this.cursor.down.isDown){
+            player.body.y += 10;
+            resizeBalloon.y += 10;
+            resizeBalloon2.y += 10;
         }
-         else if(color == "blue"){
-            player.animations.play('blue_left');
+        else {
+            player.y += 5;
+            resizeBalloon.y += 5;
+            resizeBalloon2.y += 5;
         }
-        else if(color == "yellow"){
-            player.animations.play('yellow_left');
-        }
-        else if(color == "green"){
-            player.animations.play('green_left');
-        }
+    }
+    else if(player.y > 300)
+    {
+            player.body.velocity.y = -30;
+            resizeBalloon.body.velocity.y = -30;
+            resizeBalloon2.body.velocity.y = -30;
 
     }
-    else if (cursors.right.isDown)
+
+
+    if (this.cursor.left.isDown)
     {
+        if(this.shift.isDown && this.cursor.left.isDown){
+                player.body.x -= 10;
+                resizeBalloon.x -= 10;
+                resizeBalloon2.x -= 10;
+        }
+
+        //  Move to the left
+        player.body.velocity.x = -(speed+150);
+        resizeBalloon.body.velocity.x = -(speed+150);
+        resizeBalloon2.body.velocity.x = -(speed+150);
+
+    }
+    else if (this.cursor.right.isDown)
+    {
+        if(this.shift.isDown && this.cursor.right.isDown){
+            player.body.x += 10;
+            resizeBalloon.x += 10;
+            resizeBalloon2.x += 10;
+        }
         //  Move to the right
         player.body.velocity.x = 100;
+        resizeBalloon.body.velocity.x = 100;
+        resizeBalloon2.body.velocity.x = 100;
 
         if(color == "red"){
             player.animations.play('red_right');
@@ -190,10 +257,7 @@ function update() {
             player.frame = 15;
         }
     }
-    
-    if(player.y > 300){
-        player.body.velocity.y = -100;
-    }
+
 
 
     scrollBackground();
@@ -219,8 +283,8 @@ function scrollBackground(){
 
     if(bg_clouds2.y >= 1200){
         bg_clouds2.y = -(1200-(bg_clouds2.y - 1200));
-     createBalloons(false);
-     createCoins(false);
+        createBalloons(false);
+        createCoins(false);
      }
 }
 
@@ -235,6 +299,7 @@ function balloonsOutOfFrame(){
     cleanUpBalloons;
 
 }
+
 function coinsOutOfFrame(){
     for(i = 0; i < coins.children.length; i++) {
         coins.children[i].y += speed;
@@ -246,6 +311,21 @@ function coinsOutOfFrame(){
     cleanUpCoins;
 
 }
+function setMonsterColor(){
+    if(color == "red"){
+        player.animations.play('red_left');
+    }
+    else if(color == "blue"){
+        player.animations.play('blue_left');
+    }
+    else if(color == "yellow"){
+        player.animations.play('yellow_left');
+    }
+    else if(color == "green"){
+        player.animations.play('green_left');
+    }
+}
+
 function cleanUpBalloons(){
     var aCleanup = [];
     balloons.forEachDead(function(item){
@@ -356,16 +436,46 @@ function createCoins(start){
 
 function collectBalloon (player, balloon) {
 
+    if(color == balloon.animations.name){
+        scaleBalloon(true);
+        console.log(""+color + "balloon: " +  balloon.animations.name);
+    }
+    else{
+        scaleBalloon(false);
+        console.log(""+color + "balloon: " +  balloon.animations.name);
+    }
+
+
     // Removes the star from the screen
     balloon.kill();
     balloon.destroy();
     cleanUpBalloons();
-    speed += 0.2;
+  speed += 0.2;
     //  Add and update the score
     score += 10;
     scoreText.text = 'Score: ' + parseInt(score);
 
 }
+
+function scaleBalloon(bigger){
+    if(bigger == true){
+        size += 0.1;
+    }
+    else{
+        size -= 0.1;
+    }
+    if(size > 0.0){
+    resizeBalloon.scale.set(size, size);
+    resizeBalloon.x = (player.x+73) - parseFloat(resizeBalloon.width/2);
+    resizeBalloon.y = (player.y - 29) - resizeBalloon.height;
+    }
+    else{
+        //Spiel Vorbei!
+        quitGame();
+
+    }
+}
+
 function collectCoin (player, coin) {
 
     // Removes the star from the screen
@@ -375,6 +485,13 @@ function collectCoin (player, coin) {
     //  Add and update the score
     score += speed*2;
     scoreText.text = 'Score: ' + parseInt(score);
+
+}
+
+function quitGame(){
+    gameOverText = game.add.text(200, 300, 'score: 0', { fontSize: '60px', fill: '#ffffff' });
+
+    game.destroy();
 
 }
 
