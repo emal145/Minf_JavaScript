@@ -19,6 +19,8 @@
     </style>
 </head>
 <body>
+
+
 <label id="over" ></label>
 <label id="highscore" ></label>
 
@@ -37,9 +39,12 @@ function preload() {
     game.load.spritesheet('resizeBalloon', 'assets/resizeBalloons.png', 144, 188, 4);
     game.load.spritesheet('resizeBalloon2', 'assets/resizeBalloons2.png', 40, 144, 4);
 
-    game.load.spritesheet('colored_balloon', 'assets/baloons.png', 100,200, 12);
+    game.load.spritesheet('colored_balloon', 'assets/collectBalloons.png', 150,225, 12);
     game.load.spritesheet('dude', 'assets/Monster_Sprite.png', 100, 100, 16);
     game.load.spritesheet('coin', 'assets/muenze.png', 200, 200, 8);
+    game.load.audio('coinSound', 'assets/sounds/coin_sound.mp3');
+    game.load.audio('balloonSound', 'assets/sounds/ballonplatzt.wav.m4a');
+    game.load.audio('backgroundSound', 'assets/sounds/kiraBackground.mp3');
 
 }
 
@@ -49,7 +54,7 @@ var cursors;
 var colorKey;
 var bg_sprite_sky1;
 var bg_sprite_sky2;
-var speed = 2;
+var speed = 4;
 var balloons;
 var coins;
 var score = 0;
@@ -112,6 +117,17 @@ function create() {
 
     this.R = this.game.input.keyboard.addKey(Phaser.Keyboard.R);
     this.R.onDown.add(processKey, this);
+
+    this.coinSound = this.game.add.audio('coinSound',0.1);
+    this.coinSoundPlayed = false;
+
+    this.balloonSound = this.game.add.audio('balloonSound',0.1);
+    this.ballonSoundPlayed = false;
+
+    this.backgroundSound = this.game.add.audio('backgroundSound');
+    this.backgroundSoundPlayed = false;
+this.backgroundSound.play();
+
 }
 
 function createFilter(){
@@ -897,6 +913,7 @@ function collectBalloon (player, balloon) {
     }
 
     // Removes the star from the screen
+    this.balloonSound.play();
     balloon.destroy();
     cleanUpBalloons();
     //  Add and update the score
@@ -942,6 +959,8 @@ function collectCoin (player, coin) {
 
     // Removes the star from the screen
     coin.destroy();
+    this.coinSound.play();
+    console.log("desrtoyed");
     //cleanUpCoins();
     //  Add and update the score
     score += speed*2;
@@ -985,6 +1004,8 @@ function load() {
 
     document.getElementById("highscore").innerHTML = "<br/> Score: " + parseInt(score) +" <br/> 1: " + player1 + " <br/> 2: " + player2 + " <br/> 3: " + player3 + " <br/> 4: " + player4 + " <br/> 5: " + player5;
 }
+
+
 
 function sort() {
     for (i = 1; i <= window.localStorage.length; i++) {
