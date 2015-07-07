@@ -23,18 +23,10 @@
 
 <label id="over" ></label>
 <label id="highscore" ></label>
-<button onclick="startGame()">STARTEEN</button>
+
 <script type="text/javascript">
 
     var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update, quitGame: quitGame});
-
-    function startGame(){
-        menu = false;
-        game.paused = false;
-
-    }
-
-
 
     function preload() {
 
@@ -43,12 +35,6 @@
         game.load.image('clouds1', 'assets/clouds1.jpg', 600, 1200);
         game.load.image('clouds2', 'assets/clouds2.jpg', 600, 1200);
         game.load.image('dark_sky', 'assets/sky_dark.jpg', 600, 600);
-
-        game.load.image('menu_title', 'assets/menu_game_title.png');
-        game.load.image('menu_arrow', 'assets/menu_arrow.png');
-        game.load.image('menu_button1', 'assets/menu_button.png');
-        game.load.image('menu_button2', 'assets/menu_button2.png');
-        game.load.image('menu_button3', 'assets/menu_button3.png');
 
         game.load.spritesheet('resizeBalloon', 'assets/SingleCollectBalloons.png', 150, 150, 4);
         game.load.spritesheet('resizeBalloon2', 'assets/SingleCollectBalloonsEnd.png', 75, 50, 1);
@@ -63,10 +49,6 @@
     }
 
     var player;
-    var gameTitle;
-    var button1;
-    var button2;
-    var button3;
     var color = "red";
     var cursors;
     var colorKey;
@@ -88,14 +70,13 @@
     var countCoins = 20;
     var loopTime = 500;
     var fullY = 0;
-    var menu = true;
 
     function create() {
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
+
         createBackgrounds();
         createFilter();
-
         createResizableBalloon();
         createPlayer();
 
@@ -149,17 +130,6 @@
         this.backgroundSound.play();
 
     }
-    function playState() {
-        game.state.start('play');
-    }
-
-    function drawMenu() {
-        this.button1 =  game.add.button(game.world.centerX,
-                game.world.centerY - 50, 'menu_button1');
-        this.button1.anchor.setTo(0.5, 0.5);
-
-    }
-
 
     function createFilter(){
         var fragmentRainbowSrc = [
@@ -447,12 +417,6 @@
     }
 
     function update() {
-        if(menu == true){
-            game.paused = true;
-            drawMenu();
-            menu = false;
-        }
-
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         game.physics.arcade.overlap(resizeBalloon, balloons, collectBalloon, null, this);
         game.physics.arcade.overlap(resizeBalloon, coins, collectCoin, null, this);
@@ -934,6 +898,7 @@
     }
 
     function collectBalloon (player, balloon) {
+
         if(color == balloon.animations.name){
             scaleBalloon(true, true);
             speed += 0.2;
