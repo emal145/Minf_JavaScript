@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="422924f1-6e4e-4ebd-aeab-1c3bc39c9e25" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Game/FlyingMonster.html" afterPath="$PROJECT_DIR$/Game/FlyingMonster.html" />
-    </list>
+    <list default="true" id="422924f1-6e4e-4ebd-aeab-1c3bc39c9e25" name="Default" comment="" />
     <ignored path="FlyingMonster.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
