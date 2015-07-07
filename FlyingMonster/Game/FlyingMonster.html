@@ -80,6 +80,7 @@
     var colorKey;
     var bg_sprite_sky1;
     var bg_sprite_sky2;
+    var bg_sprite_dark1;
     var speed = 6;
     var balloons;
     var coins;
@@ -98,6 +99,8 @@
     var fullY = 0;
     var menu = true;
     var counterEnd = false;
+    var bgCounter = 0;
+    var changeBackground = false;
 
     function startGame(){
         var introImage = document.getElementById("img2");
@@ -605,7 +608,13 @@
         fullY += speed + tempo;
         speedText.text = 'Speed: '+ parseInt((speed + tempo)*15 ) + "km/h";
 
+
         if(bg_clouds1.y >= 1200) {
+            bgCounter++;
+            if(bgCounter == 1){
+                bg_clouds1.destroy();
+                bg_clouds1 = game.add.image(0, -1200, 'dark_sky')
+            }
             bg_clouds1.y = -(1200 - (bg_clouds1.y - 1200));
         }
 
