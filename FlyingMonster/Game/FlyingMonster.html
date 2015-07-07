@@ -42,9 +42,9 @@
         game.load.spritesheet('colored_balloon', 'assets/collectBalloons.png', 150,225, 12);
         game.load.spritesheet('dude', 'assets/Monster_Sprite.png', 100, 100, 16);
         game.load.spritesheet('coin', 'assets/muenze.png', 200, 200, 8);
-        game.load.audio('coinSound', 'assets/sounds/coin_sound.mp3');
-        game.load.audio('balloonSound', 'assets/sounds/ballonplatzt.wav.m4a');
-        game.load.audio('backgroundSound', 'assets/sounds/kiraBackground.mp3');
+        game.load.audio('coinSound', 'assets/sounds/coin_sound_new.wav');
+        game.load.audio('balloonSound', 'assets/sounds/balloonSoundPop.mp3');
+        game.load.audio('backgroundSound', 'assets/sounds/backgroundSound.mp3');
 
     }
 
@@ -125,6 +125,7 @@
         this.ballonSoundPlayed = false;
 
         this.backgroundSound = this.game.add.audio('backgroundSound');
+        this.backgroundSound.volume = 0.1;
         this.backgroundSoundPlayed = false;
         this.backgroundSound.play();
 
@@ -913,6 +914,7 @@
 
         // Removes the star from the screen
         this.balloonSound.play();
+        this.balloonSound.volume = 0.04;
         balloon.destroy();
         cleanUpBalloons();
         //  Add and update the score
@@ -959,6 +961,7 @@
         // Removes the star from the screen
         coin.destroy();
         this.coinSound.play();
+        this.coinSound.volume = 0.05;
         console.log("desrtoyed");
         //cleanUpCoins();
         //  Add and update the score
