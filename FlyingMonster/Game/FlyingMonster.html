@@ -933,7 +933,7 @@
 
     function quitGame(){
         document.getElementById("over").innerHTML = "GAME OVER!";
-        document.getElementById("highscore").innerHTML = "<br/> Score: " + parseInt(score) +" <br/> 1: " + player1 + " <br/> 2: " + player2 + " <br/> 3: " + player3 + " <br/> 4: " + player4 + " <br/> 5: " + player5;
+        document.getElementById("highscore").innerHTML = "Score: " + parseInt(score);
         game.destroy();
 
     }

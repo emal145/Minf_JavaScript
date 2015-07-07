@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="422924f1-6e4e-4ebd-aeab-1c3bc39c9e25" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Game/assets/countdown.gif" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Game/FlyingMonster.html" afterPath="$PROJECT_DIR$/Game/FlyingMonster.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="FlyingMonster.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,8 +26,8 @@
       <file leaf-file-name="FlyingMonster.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Game/FlyingMonster.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.53475934">
-              <caret line="36" column="58" selection-start-line="36" selection-start-column="58" selection-end-line="36" selection-end-column="58" />
+            <state vertical-scroll-proportion="0.6524064">
+              <caret line="934" column="84" selection-start-line="934" selection-start-column="84" selection-end-line="934" selection-end-column="84" />
               <folding />
             </state>
           </provider>
@@ -573,8 +571,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Game/FlyingMonster.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.53475934">
-          <caret line="36" column="58" selection-start-line="36" selection-start-column="58" selection-end-line="36" selection-end-column="58" />
+        <state vertical-scroll-proportion="0.6524064">
+          <caret line="934" column="84" selection-start-line="934" selection-start-column="84" selection-end-line="934" selection-end-column="84" />
           <folding />
         </state>
       </provider>
