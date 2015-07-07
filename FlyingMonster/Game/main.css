@@ -3,8 +3,8 @@ body{
 }
 #header {
     
-    background-image: url("space3.jpg");
-    height:600px;
+    background-image: url("background.jpg");
+    height:470px;
     width:600px;
     float:left;
     padding:5px; 
@@ -15,7 +15,7 @@ body{
      color: #800000 ;
       font-size:30px;
     font-weight:red;
-      padding-top:20px;
+      padding-top:150px;
       margin: auto auto 0 auto;
      text-shadow: #fff 0 1px 0;
 }
