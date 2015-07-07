@@ -1,0 +1,45 @@
+body{
+
+}
+#header {
+    
+    background-image: url("space3.jpg");
+    height:600px;
+    width:600px;
+    float:left;
+    padding:5px; 
+	position:center;
+	text-align: center;
+	 font-family: Bradley Hand ITC;
+
+     color: #800000 ;
+      font-size:30px;
+    font-weight:red;
+      padding-top:20px;
+      margin: auto auto 0 auto;
+     text-shadow: #fff 0 1px 0;
+}
+#button1{
+    width:200px;
+    height:38px;
+	padding-top:15px;
+	font-size:80px;
+	font-weight:red;
+	text-align:center;
+   
+    
+    
+    font: bold 18px "Trebuchet MS", Verdana, Arial, Sans-serif;
+	color: #800000 ;
+    float:centre;
+	outline: none;
+  
+    color:none;
+    text-decoration:none;
+	position:absolute;
+    bottom:33%;
+    left:13%;
+	margin: auto auto 0 auto;
+	
+
+}
