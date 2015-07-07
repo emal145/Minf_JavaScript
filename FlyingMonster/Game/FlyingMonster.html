@@ -7,6 +7,7 @@
     <style type="text/css">
         body {
             margin: 0;
+            background: black;
         }
         label {
             font-size: 60px;
@@ -15,6 +16,11 @@
         textarea {
             font-size: 20px;
             color: red;
+        }
+        canvas {
+            display : block;
+            margin-left: 25%;
+            height: 100%;
         }
     </style>
 </head>
@@ -54,7 +60,7 @@
     var colorKey;
     var bg_sprite_sky1;
     var bg_sprite_sky2;
-    var speed = 4;
+    var speed = 6;
     var balloons;
     var coins;
     var score = 0;
@@ -70,16 +76,19 @@
     var countCoins = 20;
     var loopTime = 500;
     var fullY = 0;
-
+    var countdown = false;
+    
     function create() {
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
+
 
         createBackgrounds();
         createFilter();
         createResizableBalloon();
         createPlayer();
 
+        countDown = game.add.image(200, 200, 'countdown');
 
         //  Finally some stars to collect
         balloons = game.add.group();
@@ -98,6 +107,7 @@
         //  The score
         scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
         speedText = game.add.text(16, 50, 'speed: '+(speed*15) + ' km/h', { fontSize: '32px', fill: '#000' });
+
 
         //  Our controls.
         this.cursor = game.input.keyboard.createCursorKeys();
@@ -128,6 +138,10 @@
         this.backgroundSound.volume = 0.1;
         this.backgroundSoundPlayed = false;
         this.backgroundSound.play();
+        this.game.stage.scale.pageAlignHorizontally = true;
+        this.game.stage.scale.pageAlignVeritcally = true;
+        this.game.stage.scale.refresh();
+
 
     }
 
@@ -263,7 +277,6 @@
         }
 
         setBalloonPosition();
-
     }
 
     function createResizableBalloon(){
@@ -416,8 +429,25 @@
         }
     }
 
+    function countDown(secs){
+        var element = document.getElementById(elem);
+        element.innerHTML = "<b>Get ready</b> <p><h1>"+secs+"</h1></p>";
+        if(secs < 1){
+            clearTimeout(timer);
+            element.innerHTML = '<h1>Go!</h1>';
+        }
+        secs--;
+        var timer = setTimeout('countDown('+secs+')',100);
+    }
     function update() {
-        //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
+        this.game.lockRender = true;
+
+        if (this.game.lockRender == true) {
+        }
+        countDown(18);
+    }
+
+         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         game.physics.arcade.overlap(resizeBalloon, balloons, collectBalloon, null, this);
         game.physics.arcade.overlap(resizeBalloon, coins, collectCoin, null, this);
         game.physics.arcade.overlap(player, balloons, collectBalloon, null, this);
@@ -449,19 +479,19 @@
             resizeBalloon2.body.gravity.y = 0;
         }
         else {
-            //  Stand still
-            if(player.y > 300)
-            {
-                player.body.velocity.y = -30;
-                resizeBalloon.body.velocity.y = -30;
-                resizeBalloon2.body.velocity.y = -30;
-            }
-            else {
-                player.body.velocity.y = 30;
-                resizeBalloon.body.velocity.y = 30;
-                resizeBalloon2.body.velocity.y = 30;
-
-            }
+//            //  Stand still
+//            if(player.y > 300)
+//            {
+//                player.body.velocity.y = -30;
+//                resizeBalloon.body.velocity.y = -30;
+//                resizeBalloon2.body.velocity.y = -30;
+//            }
+//            else {
+//                player.body.velocity.y = 30;
+//                resizeBalloon.body.velocity.y = 30;
+//                resizeBalloon2.body.velocity.y = 30;
+//
+//            }
 
             player.animations.stop();
 
@@ -1031,8 +1061,6 @@
                     if ((parseInt(temp) < parseInt(temp2)) ||  (parseInt(temp) == null)  ) {
                         temp = temp2;
                         temp2 = temp3;
-                        console.log("switched!!! ");
-
                     }
 
                 }
@@ -1040,7 +1068,7 @@
             window.localStorage.setItem(key, temp);
         }
     }
-
 </script>
+
 </body>
 </html>
