@@ -24,19 +24,17 @@
             margin-top: 0;
             z-index: 0;
         }
-        #img1 {
+        img {
+            z-index: 1;
             position: absolute;
-            z-index: 0;
             margin-left:500px;
             margin-top:200px;
         }
     </style>
 </head>
-<img>
-
 <label id="over" ></label>
 <label id="highscore" ></label>
-<img id="img1" width="200" height="200" src="assets/countdown.gif">
+<img id="counDownGifImage" width="200" height="200" src="/assets/countdown2.gif">
 
 <script type="text/javascript">
 
@@ -212,57 +210,6 @@
             "c += vec3(0.17, 0.17, 0.05) * ( glowFactor * abs( 1.0 / sin(p.y + cos( p.x + time+5.00 ) * amplitude+0.2 ) ));",
 
             "gl_FragColor = vec4( c, 0.2);",
-            "}"
-        ];
-
-        var fragmentGalaxySrc = [
-
-            "precision mediump float;",
-
-            "uniform float     time;",
-            "uniform vec2      resolution;",
-            "uniform vec2      mouse;",
-
-            "// https://www.shadertoy.com/view/MdXSzS",
-
-            "void main()",
-            "{",
-            "vec2 uv = (gl_FragCoord.xy/resolution.xy)-.5;",
-
-            "float time = time * .1 + ((.25+.05*sin(time*.1))/(length(uv.xy)+.07))* 2.2;",
-            "float si = sin(time);",
-            "float co = cos(time);",
-            "mat2 ma = mat2(co, si, -si, co);",
-
-            "float c = 0.0;",
-            "float v1 = 0.0;",
-            "float v2 = 0.0;",
-
-            "for (int i = 0; i < 100; i++)",
-            "{",
-            "float s = float(i) * .035;",
-            "vec3 p = s * vec3(uv, 0.0);",
-            "p.xy *= ma;",
-            "p += vec3(.22,.3, s-1.5-sin(time*.13)*.1);",
-            "for (int i = 0; i < 8; i++)",
-            "{",
-            "p = abs(p) / dot(p,p) - 0.659;",
-            "}",
-            "v1 += dot(p,p)*.0015 * (1.8+sin(length(uv.xy*13.0)+.5-time*.2));",
-            "v2 += dot(p,p)*.0015 * (1.5+sin(length(uv.xy*13.5)+2.2-time*.3));",
-            "c = length(p.xy*.5) * .35;",
-            "}",
-
-            "float len = length(uv);",
-            "v1 *= smoothstep(.7, .0, len);",
-            "v2 *= smoothstep(.6, .0, len);",
-
-            "float re = clamp(c, 0.0, 1.0);",
-            "float gr = clamp((v1+c)*.25, 0.0, 1.0);",
-            "float bl = clamp(v2, 0.0, 1.0);",
-            "vec3 col = vec3(re, gr, bl) + smoothstep(0.15, .0, len) * .9;",
-
-            "gl_FragColor=vec4(col, 1.0);",
             "}"
         ];
 
@@ -611,11 +558,6 @@
 
 
         if(bg_clouds1.y >= 1200) {
-            bgCounter++;
-            if(bgCounter == 1){
-                bg_clouds1.destroy();
-                bg_clouds1 = game.add.image(0, -1200, 'dark_sky')
-            }
             bg_clouds1.y = -(1200 - (bg_clouds1.y - 1200));
         }
 
@@ -787,7 +729,7 @@
 
             while(gameWidth > 0) {
 
-                var randomPattern = game.rnd.integerInRange(1, 6);
+                var randomPattern = game.rnd.integerInRange(1, 4);
                 if ((randomPattern == before) == false) {
 
                     if ((randomPattern == 1) && (gameWidth > (pattern1Width + transX) )) {
