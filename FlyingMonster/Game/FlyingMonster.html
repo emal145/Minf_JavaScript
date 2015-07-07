@@ -19,42 +19,24 @@
         }
         canvas {
             position: absolute;
-            display : block;
             margin-left: 25%;
-            height: 100%;
+            height: 600px;
             margin-top: 0;
-            z-index: -1;
+            z-index: 0;
         }
         #img1 {
             position: absolute;
             z-index: 0;
+            margin-left:500px;
+            margin-top:200px;
         }
-
-        #img2 {
-            position: absolute;
-            margin-left: 25%;
-            height: 100%;
-            margin-top: 0;
-            z-index: 1;
-        }
-        button{
-            position: absolute;
-            margin: 25%;
-            margin-left: 45%;
-            height: 10%;
-            z-index: 2;
-        }
-
     </style>
 </head>
 <img>
 
 <label id="over" ></label>
 <label id="highscore" ></label>
-<button id="startButton" onclick="startGame()" width="100">STARTEEN</button>
-<img id="img1"src="assets/countdown.gif" style="margin-top: 200px; margin-left: 500px; ">
-
-<img id="img2" src="assets/Hintergrund-Start.jpg" width="600" height="600"/>
+<img id="img1" width="200" height="200" src="assets/countdown.gif">
 
 <script type="text/javascript">
 
@@ -115,14 +97,14 @@
     var loopTime = 500;
     var fullY = 0;
     var menu = true;
-    var counterEnd = false
+    var counterEnd = false;
 
     function startGame(){
         var introImage = document.getElementById("img2");
         var button = document.getElementById("startButton");
         introImage.style.visibility = "hidden";
         startButton.style.visibility = "hidden";
-        timerCount(1);
+        var img = document.getElementById("startButton");
     }
 
     function create() {
@@ -510,6 +492,7 @@
     function update() {
         if(counterEnd == false) {
             this.game.paused = true;
+            timerCount(1);
         }
 
          //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
