@@ -1,7 +1,7 @@
-<!doctype html> 
-<html lang="en"> 
-<head> 
-	<meta charset="UTF-8" />
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
     <title>Flying Monster</title>
     <script src="assets/phaser.min.js"></script>
     <style type="text/css">
@@ -13,8 +13,8 @@
             color: red;
         }
         textarea {
-               font-size: 20px;
-               color: red;
+            font-size: 20px;
+            color: red;
         }
     </style>
 </head>
@@ -26,769 +26,768 @@
 
 <script type="text/javascript">
 
-var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update, quitGame: quitGame});
+    var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update, quitGame: quitGame});
 
-function preload() {
+    function preload() {
 
-    game.load.image('ground', 'assets/Hintergrund-Start.jpg', 600, 600);
-    game.load.image('blue_sky', 'assets/blue_Sky.jpg', 600, 600);
-    game.load.image('clouds1', 'assets/clouds1.jpg', 600, 1200);
-    game.load.image('clouds2', 'assets/clouds2.jpg', 600, 1200);
-    game.load.image('dark_sky', 'assets/sky_dark.jpg', 600, 600);
+        game.load.image('ground', 'assets/Hintergrund-Start.jpg', 600, 600);
+        game.load.image('blue_sky', 'assets/blue_Sky.jpg', 600, 600);
+        game.load.image('clouds1', 'assets/clouds1.jpg', 600, 1200);
+        game.load.image('clouds2', 'assets/clouds2.jpg', 600, 1200);
+        game.load.image('dark_sky', 'assets/sky_dark.jpg', 600, 600);
 
-    game.load.spritesheet('resizeBalloon', 'assets/resizeBalloons.png', 144, 188, 4);
-    game.load.spritesheet('resizeBalloon2', 'assets/resizeBalloons2.png', 40, 144, 4);
+        game.load.spritesheet('resizeBalloon', 'assets/resizeBalloons.png', 144, 188, 4);
+        game.load.spritesheet('resizeBalloon2', 'assets/resizeBalloons2.png', 40, 144, 4);
 
-    game.load.spritesheet('colored_balloon', 'assets/collectBalloons.png', 150,225, 12);
-    game.load.spritesheet('dude', 'assets/Monster_Sprite.png', 100, 100, 16);
-    game.load.spritesheet('coin', 'assets/muenze.png', 200, 200, 8);
-    game.load.audio('coinSound', 'assets/sounds/coin_sound.mp3');
-    game.load.audio('balloonSound', 'assets/sounds/ballonplatzt.wav.m4a');
-    game.load.audio('backgroundSound', 'assets/sounds/kiraBackground.mp3');
+        game.load.spritesheet('colored_balloon', 'assets/collectBalloons.png', 150,225, 12);
+        game.load.spritesheet('dude', 'assets/Monster_Sprite.png', 100, 100, 16);
+        game.load.spritesheet('coin', 'assets/muenze.png', 200, 200, 8);
+        game.load.audio('coinSound', 'assets/sounds/coin_sound.mp3');
+        game.load.audio('balloonSound', 'assets/sounds/ballonplatzt.wav.m4a');
+        game.load.audio('backgroundSound', 'assets/sounds/kiraBackground.mp3');
 
-}
-
-var player;
-var color = "red";
-var cursors;
-var colorKey;
-var bg_sprite_sky1;
-var bg_sprite_sky2;
-var speed = 4;
-var balloons;
-var coins;
-var score = 0;
-var scoreText;
-var resizeBalloon;
-var resizeBalloon2;
-var size = 0.5;
-var gameOverText;
-var filter;
-var spacedSprite;
-var spacedUp = false;
-var tempo = 0;
-var countCoins = 20;
-var loopTime = 500;
-var fullY = 0;
-
-function create() {
-    //  We're going to be using physics, so enable the Arcade Physics system
-    game.physics.startSystem(Phaser.Physics.ARCADE);
-
-    createBackgrounds();
-    createFilter();
-    createResizableBalloon();
-    createPlayer();
-
-
-    //  Finally some stars to collect
-    balloons = game.add.group();
-    //  We will enable physics for any star that is created in this group
-    balloons.enableBody = true;
-    createBalloons(true);
-
-    //  Finally some stars to collect
-    coins = game.add.group();
-    coins.enableBody = true;
-    createCoins(true);
-
-    createBalloons(false);
-    createCoins(false);
-
-    //  The score
-    scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-    speedText = game.add.text(16, 50, 'speed: '+(speed*15) + ' km/h', { fontSize: '32px', fill: '#000' });
-
-    //  Our controls.
-   this.cursor = game.input.keyboard.createCursorKeys();
-    //  Our controls.
-    colorKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    colorKey.onDown.add(processKey, this);
-    this.shift = this.game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
-
-    this.Q = this.game.input.keyboard.addKey(Phaser.Keyboard.Q);
-    this.Q.onDown.add(processKey, this);
-
-    this.W = this.game.input.keyboard.addKey(Phaser.Keyboard.W);
-    this.W.onDown.add(processKey, this);
-
-    this.E = this.game.input.keyboard.addKey(Phaser.Keyboard.E);
-    this.E.onDown.add(processKey, this);
-
-    this.R = this.game.input.keyboard.addKey(Phaser.Keyboard.R);
-    this.R.onDown.add(processKey, this);
-
-    this.coinSound = this.game.add.audio('coinSound',0.1);
-    this.coinSoundPlayed = false;
-
-    this.balloonSound = this.game.add.audio('balloonSound',0.1);
-    this.ballonSoundPlayed = false;
-
-    this.backgroundSound = this.game.add.audio('backgroundSound');
-    this.backgroundSoundPlayed = false;
-this.backgroundSound.play();
-
-}
-
-function createFilter(){
-    var fragmentRainbowSrc = [
-        "precision mediump float;",
-        "uniform vec2      resolution;",
-        "uniform float     time;",
-
-        "void main( void )",
-        "{",
-        "vec2 p = ( gl_FragCoord.xy / resolution.xy ) * 2.0 - 1.0;",
-
-        "vec3 c = vec3( 0.0 );",
-
-        "float amplitude = 0.50;",
-        "float glowT = sin(time) * 0.5 + 0.5;",
-        "float glowFactor = mix( 0.15, 0.35, glowT );",
-
-        "c += vec3(0.02, 0.03, 0.13) * ( glowFactor * abs( 1.0 / sin(p.x + sin( p.y + time ) * amplitude ) ));",
-        "c += vec3(0.02, 0.10, 0.03) * ( glowFactor * abs( 1.0 / sin(p.x + cos( p.y + time+1.00 ) * amplitude+0.1 ) ));",
-        "c += vec3(0.15, 0.05, 0.20) * ( glowFactor * abs( 1.0 / sin(p.y + sin( p.x + time+1.30 ) * amplitude+0.15 ) ));",
-        "c += vec3(0.20, 0.05, 0.05) * ( glowFactor * abs( 1.0 / sin(p.y + cos( p.x + time+3.00 ) * amplitude+0.3 ) ));",
-        "c += vec3(0.17, 0.17, 0.05) * ( glowFactor * abs( 1.0 / sin(p.y + cos( p.x + time+5.00 ) * amplitude+0.2 ) ));",
-
-        "gl_FragColor = vec4( c, 0.2);",
-        "}"
-    ];
-
-    var fragmentGalaxySrc = [
-
-        "precision mediump float;",
-
-        "uniform float     time;",
-        "uniform vec2      resolution;",
-        "uniform vec2      mouse;",
-
-        "// https://www.shadertoy.com/view/MdXSzS",
-
-        "void main()",
-        "{",
-        "vec2 uv = (gl_FragCoord.xy/resolution.xy)-.5;",
-
-        "float time = time * .1 + ((.25+.05*sin(time*.1))/(length(uv.xy)+.07))* 2.2;",
-        "float si = sin(time);",
-        "float co = cos(time);",
-        "mat2 ma = mat2(co, si, -si, co);",
-
-        "float c = 0.0;",
-        "float v1 = 0.0;",
-        "float v2 = 0.0;",
-
-        "for (int i = 0; i < 100; i++)",
-        "{",
-        "float s = float(i) * .035;",
-        "vec3 p = s * vec3(uv, 0.0);",
-        "p.xy *= ma;",
-        "p += vec3(.22,.3, s-1.5-sin(time*.13)*.1);",
-        "for (int i = 0; i < 8; i++)",
-        "{",
-        "p = abs(p) / dot(p,p) - 0.659;",
-        "}",
-        "v1 += dot(p,p)*.0015 * (1.8+sin(length(uv.xy*13.0)+.5-time*.2));",
-        "v2 += dot(p,p)*.0015 * (1.5+sin(length(uv.xy*13.5)+2.2-time*.3));",
-        "c = length(p.xy*.5) * .35;",
-        "}",
-
-        "float len = length(uv);",
-        "v1 *= smoothstep(.7, .0, len);",
-        "v2 *= smoothstep(.6, .0, len);",
-
-        "float re = clamp(c, 0.0, 1.0);",
-        "float gr = clamp((v1+c)*.25, 0.0, 1.0);",
-        "float bl = clamp(v2, 0.0, 1.0);",
-        "vec3 col = vec3(re, gr, bl) + smoothstep(0.15, .0, len) * .9;",
-
-        "gl_FragColor=vec4(col, 1.0);",
-        "}"
-    ];
-
-    filter = new Phaser.Filter(game, null, fragmentRainbowSrc);
-    filter.setResolution(600, 600);
-    spacedSprite = game.add.sprite();
-    game.physics.arcade.enable(spacedSprite);
-
-    spacedSprite.width = 600;
-    spacedSprite.height = 600;
-
-    spacedSprite.filters = [ filter ];
-    //spacedSprite.anchor.setTo(0.5, 0.5);
-    //game.add.tween(spacedSprite).to( { alpha: 1 }, 2000, Phaser.Easing.Linear.None, true, 0, 1000, true);
-
-
-    spacedSprite.filters = [ filter ];
-    spacedSprite.visible = false;
-
-}
-
-function createPlayer(){
-    // The player and its settings
-    player = game.add.sprite(225, game.world.height - 150, 'dude');
- //  We need to enable physics on the player
-    game.physics.arcade.enable(player);
-
-    //  Player physics properties. Give the little guy a slight bounce.
-   // player.body.gravity.y = 100;
-
-    //  Our two animations, walking left and right.
-    player.animations.add('red_left', [2], true);
-    player.animations.add('red_right', [1], true);
-
-    player.animations.add('blue_left', [6], true);
-    player.animations.add('blue_right', [5], true);
-
-    player.animations.add('green_left', [10], true);
-    player.animations.add('green_right', [9], true);
-
-    player.animations.add('yellow_left', [14], true);
-    player.animations.add('yellow_right', [13], true);
-
-    player.checkWorldBounds = true;
-    player.events.onOutOfBounds.add(playerOut, player);
-
-}
-
-function playerOut(player){
-
-    if(player.x > 600) {
-        player.x = -5;
-    }
-    else if(player.x < 600) {
-        player.x = 595;
     }
 
-    setBalloonPosition();
+    var player;
+    var color = "red";
+    var cursors;
+    var colorKey;
+    var bg_sprite_sky1;
+    var bg_sprite_sky2;
+    var speed = 4;
+    var balloons;
+    var coins;
+    var score = 0;
+    var scoreText;
+    var resizeBalloon;
+    var resizeBalloon2;
+    var size = 0.5;
+    var gameOverText;
+    var filter;
+    var spacedSprite;
+    var spacedUp = false;
+    var tempo = 0;
+    var countCoins = 20;
+    var loopTime = 500;
+    var fullY = 0;
 
-}
+    function create() {
+        //  We're going to be using physics, so enable the Arcade Physics system
+        game.physics.startSystem(Phaser.Physics.ARCADE);
 
-function createResizableBalloon(){
-    resizeBalloon = game.add.sprite(225, 233, 'resizeBalloon');
-    game.physics.arcade.enable(resizeBalloon);
-    resizeBalloon.scale.set(size, size);
-    resizeBalloon.x = 298 - parseFloat(resizeBalloon.width/2);
-    resizeBalloon.y = 421 - resizeBalloon.height;
-    //resizeBalloon.body.gravity.y = 100;
-
-    resizeBalloon2 = game.add.sprite(290, game.world.height - 180, 'resizeBalloon2');
-    game.physics.arcade.enable(resizeBalloon2);
-
-    resizeBalloon2.scale.set(0.4, 0.4);
-    //resizeBalloon2.body.gravity.y = 100;
+        createBackgrounds();
+        createFilter();
+        createResizableBalloon();
+        createPlayer();
 
 
-}
+        //  Finally some stars to collect
+        balloons = game.add.group();
+        //  We will enable physics for any star that is created in this group
+        balloons.enableBody = true;
+        createBalloons(true);
 
-function createBackgrounds(){
-    //  A simple background for our game
-    bg_start = game.add.image(0, 0, 'ground');
-    bg_clouds1 = game.add.image(0, -1200, 'clouds1');
-    bg_clouds2 = game.add.image(0, -2400, 'clouds2');
-    bg_sky = game.add.image(0, -600, 'blue_sky');
-    bg_sky_dark = game.add.image(0, -1200, 'dark_sky');
+        //  Finally some stars to collect
+        coins = game.add.group();
+        coins.enableBody = true;
+        createCoins(true);
 
-}
+        createBalloons(false);
+        createCoins(false);
 
-function processKey(key) {
+        //  The score
+        scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        speedText = game.add.text(16, 50, 'speed: '+(speed*15) + ' km/h', { fontSize: '32px', fill: '#000' });
 
-    if (key.keyCode == Phaser.Keyboard.SPACEBAR) {
-        if (color == "red") {
-            color = "blue";
+        //  Our controls.
+        this.cursor = game.input.keyboard.createCursorKeys();
+        //  Our controls.
+        colorKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        colorKey.onDown.add(processKey, this);
+        this.shift = this.game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+
+        this.Q = this.game.input.keyboard.addKey(Phaser.Keyboard.Q);
+        this.Q.onDown.add(processKey, this);
+
+        this.W = this.game.input.keyboard.addKey(Phaser.Keyboard.W);
+        this.W.onDown.add(processKey, this);
+
+        this.E = this.game.input.keyboard.addKey(Phaser.Keyboard.E);
+        this.E.onDown.add(processKey, this);
+
+        this.R = this.game.input.keyboard.addKey(Phaser.Keyboard.R);
+        this.R.onDown.add(processKey, this);
+
+        this.coinSound = this.game.add.audio('coinSound',0.1);
+        this.coinSoundPlayed = false;
+
+        this.balloonSound = this.game.add.audio('balloonSound',0.1);
+        this.ballonSoundPlayed = false;
+
+        this.backgroundSound = this.game.add.audio('backgroundSound');
+        this.backgroundSoundPlayed = false;
+        this.backgroundSound.play();
+
+    }
+
+    function createFilter(){
+        var fragmentRainbowSrc = [
+            "precision mediump float;",
+            "uniform vec2      resolution;",
+            "uniform float     time;",
+
+            "void main( void )",
+            "{",
+            "vec2 p = ( gl_FragCoord.xy / resolution.xy ) * 2.0 - 1.0;",
+
+            "vec3 c = vec3( 0.0 );",
+
+            "float amplitude = 0.50;",
+            "float glowT = sin(time) * 0.5 + 0.5;",
+            "float glowFactor = mix( 0.15, 0.35, glowT );",
+
+            "c += vec3(0.02, 0.03, 0.13) * ( glowFactor * abs( 1.0 / sin(p.x + sin( p.y + time ) * amplitude ) ));",
+            "c += vec3(0.02, 0.10, 0.03) * ( glowFactor * abs( 1.0 / sin(p.x + cos( p.y + time+1.00 ) * amplitude+0.1 ) ));",
+            "c += vec3(0.15, 0.05, 0.20) * ( glowFactor * abs( 1.0 / sin(p.y + sin( p.x + time+1.30 ) * amplitude+0.15 ) ));",
+            "c += vec3(0.20, 0.05, 0.05) * ( glowFactor * abs( 1.0 / sin(p.y + cos( p.x + time+3.00 ) * amplitude+0.3 ) ));",
+            "c += vec3(0.17, 0.17, 0.05) * ( glowFactor * abs( 1.0 / sin(p.y + cos( p.x + time+5.00 ) * amplitude+0.2 ) ));",
+
+            "gl_FragColor = vec4( c, 0.2);",
+            "}"
+        ];
+
+        var fragmentGalaxySrc = [
+
+            "precision mediump float;",
+
+            "uniform float     time;",
+            "uniform vec2      resolution;",
+            "uniform vec2      mouse;",
+
+            "// https://www.shadertoy.com/view/MdXSzS",
+
+            "void main()",
+            "{",
+            "vec2 uv = (gl_FragCoord.xy/resolution.xy)-.5;",
+
+            "float time = time * .1 + ((.25+.05*sin(time*.1))/(length(uv.xy)+.07))* 2.2;",
+            "float si = sin(time);",
+            "float co = cos(time);",
+            "mat2 ma = mat2(co, si, -si, co);",
+
+            "float c = 0.0;",
+            "float v1 = 0.0;",
+            "float v2 = 0.0;",
+
+            "for (int i = 0; i < 100; i++)",
+            "{",
+            "float s = float(i) * .035;",
+            "vec3 p = s * vec3(uv, 0.0);",
+            "p.xy *= ma;",
+            "p += vec3(.22,.3, s-1.5-sin(time*.13)*.1);",
+            "for (int i = 0; i < 8; i++)",
+            "{",
+            "p = abs(p) / dot(p,p) - 0.659;",
+            "}",
+            "v1 += dot(p,p)*.0015 * (1.8+sin(length(uv.xy*13.0)+.5-time*.2));",
+            "v2 += dot(p,p)*.0015 * (1.5+sin(length(uv.xy*13.5)+2.2-time*.3));",
+            "c = length(p.xy*.5) * .35;",
+            "}",
+
+            "float len = length(uv);",
+            "v1 *= smoothstep(.7, .0, len);",
+            "v2 *= smoothstep(.6, .0, len);",
+
+            "float re = clamp(c, 0.0, 1.0);",
+            "float gr = clamp((v1+c)*.25, 0.0, 1.0);",
+            "float bl = clamp(v2, 0.0, 1.0);",
+            "vec3 col = vec3(re, gr, bl) + smoothstep(0.15, .0, len) * .9;",
+
+            "gl_FragColor=vec4(col, 1.0);",
+            "}"
+        ];
+
+        filter = new Phaser.Filter(game, null, fragmentRainbowSrc);
+        filter.setResolution(600, 600);
+        spacedSprite = game.add.sprite();
+        game.physics.arcade.enable(spacedSprite);
+
+        spacedSprite.width = 600;
+        spacedSprite.height = 600;
+
+        spacedSprite.filters = [ filter ];
+        //spacedSprite.anchor.setTo(0.5, 0.5);
+        //game.add.tween(spacedSprite).to( { alpha: 1 }, 2000, Phaser.Easing.Linear.None, true, 0, 1000, true);
+
+
+        spacedSprite.filters = [ filter ];
+        spacedSprite.visible = false;
+
+    }
+
+    function createPlayer(){
+        // The player and its settings
+        player = game.add.sprite(225, game.world.height - 150, 'dude');
+        //  We need to enable physics on the player
+        game.physics.arcade.enable(player);
+
+        //  Player physics properties. Give the little guy a slight bounce.
+        // player.body.gravity.y = 100;
+
+        //  Our two animations, walking left and right.
+        player.animations.add('red_left', [2], true);
+        player.animations.add('red_right', [1], true);
+
+        player.animations.add('blue_left', [6], true);
+        player.animations.add('blue_right', [5], true);
+
+        player.animations.add('green_left', [10], true);
+        player.animations.add('green_right', [9], true);
+
+        player.animations.add('yellow_left', [14], true);
+        player.animations.add('yellow_right', [13], true);
+
+        player.checkWorldBounds = true;
+        player.events.onOutOfBounds.add(playerOut, player);
+
+    }
+
+    function playerOut(player){
+
+        if(player.x > 600) {
+            player.x = -5;
         }
-        else if(color == "blue"){
-            color = "yellow";
+        else if(player.x < 600) {
+            player.x = 595;
         }
-        else if(color == "yellow"){
-            color = "green";
+
+        setBalloonPosition();
+
+    }
+
+    function createResizableBalloon(){
+        resizeBalloon = game.add.sprite(225, 233, 'resizeBalloon');
+        game.physics.arcade.enable(resizeBalloon);
+        resizeBalloon.scale.set(size, size);
+        resizeBalloon.x = 298 - parseFloat(resizeBalloon.width/2);
+        resizeBalloon.y = 421 - resizeBalloon.height;
+        //resizeBalloon.body.gravity.y = 100;
+
+        resizeBalloon2 = game.add.sprite(290, game.world.height - 180, 'resizeBalloon2');
+        game.physics.arcade.enable(resizeBalloon2);
+
+        resizeBalloon2.scale.set(0.4, 0.4);
+        //resizeBalloon2.body.gravity.y = 100;
+
+
+    }
+
+    function createBackgrounds(){
+        //  A simple background for our game
+        bg_start = game.add.image(0, 0, 'ground');
+        bg_clouds1 = game.add.image(0, -1200, 'clouds1');
+        bg_clouds2 = game.add.image(0, -2400, 'clouds2');
+        bg_sky = game.add.image(0, -600, 'blue_sky');
+        bg_sky_dark = game.add.image(0, -1200, 'dark_sky');
+
+    }
+
+    function processKey(key) {
+
+        if (key.keyCode == Phaser.Keyboard.SPACEBAR) {
+            if (color == "red") {
+                color = "blue";
+            }
+            else if(color == "blue"){
+                color = "yellow";
+            }
+            else if(color == "yellow"){
+                color = "green";
+            }
+            else if(color == "green"){
+                color = "red";
+            }
+
+            setMonsterColor();
+            setBalloonColor();
         }
-        else if(color == "green"){
+        else if(key.keyCode == Phaser.Keyboard.Q){
             color = "red";
         }
-
+        else if(key.keyCode == Phaser.Keyboard.W){
+            color = "blue";
+        }else if(key.keyCode == Phaser.Keyboard.E){
+            color = "yellow";
+        }else if(key.keyCode == Phaser.Keyboard.R){
+            color = "green";
+        }
         setMonsterColor();
         setBalloonColor();
-    }
-    else if(key.keyCode == Phaser.Keyboard.Q){
-        color = "red";
-    }
-    else if(key.keyCode == Phaser.Keyboard.W){
-        color = "blue";
-    }else if(key.keyCode == Phaser.Keyboard.E){
-        color = "yellow";
-    }else if(key.keyCode == Phaser.Keyboard.R){
-        color = "green";
-    }
-    setMonsterColor();
-    setBalloonColor();
 
-}
-
-function setBalloonPosition(){
-    resizeBalloon.x = (player.x+73) - parseFloat(resizeBalloon.width/2);
-    resizeBalloon.y = (player.y - 29) - resizeBalloon.height;
-
-    resizeBalloon2.x = player.x + 65;
-    resizeBalloon2.y = player.y - 30;
-}
-
-function moveUp(shift, up){
-    if(shift.isDown && up.isDown){
-        scrollBackground(true);
-    }
-    else {
-        player.y -= (5+speed);
-        resizeBalloon.y -= (5+speed);
-        resizeBalloon2.y -= (5+speed);
-        scrollBackground(false);
-    }
-}
-
-function moveDown(shift, down){
-    if(player.y >= 490)
-    {
-        player.y = 600 - (player.height - 10);
-
-    }else if(player.y < resizeBalloon.height+resizeBalloon2.height) {
-        player.y = resizeBalloon.height + resizeBalloon2.height;
-    }
-    else if(shift.isDown && down.isDown){
-        player.y += (10+speed);
-        resizeBalloon.y += (10+speed);
-        resizeBalloon2.y += (10+speed);
-    }
-    else {
-        player.y += (5+speed);
-        resizeBalloon.y += (5+speed);
-        resizeBalloon2.y += (5+speed);
-    }
-    setBalloonPosition();
-    scrollBackground(false);
-}
-
-function moveLeft(shift, left){
-
-    if(shift.isDown && left.isDown){
-        player.x -= (10+speed);
-        resizeBalloon.x -= (10+speed);
-        resizeBalloon2.x -= (10+speed);
     }
 
-    //  Move to the left
-    player.x -= (5+speed);
-    resizeBalloon.x -=  (5+speed);
-    resizeBalloon2.x -=  (5+speed);
+    function setBalloonPosition(){
+        resizeBalloon.x = (player.x+73) - parseFloat(resizeBalloon.width/2);
+        resizeBalloon.y = (player.y - 29) - resizeBalloon.height;
 
-    scrollBackground(false);
-}
-
-function moveRight(shift, right){
-    //  Move to the right
-    if (shift.isDown && right.isDown) {
-        player.x += (10+speed);
-        resizeBalloon.x += (10+speed);
-        resizeBalloon2.x += (10+speed);
+        resizeBalloon2.x = player.x + 65;
+        resizeBalloon2.y = player.y - 30;
     }
 
-    player.x += (5+speed);
-    resizeBalloon.x += (5+speed);
-    resizeBalloon2.x += (5+speed);
-
-
-    scrollBackground(false);
-}
-
-function playerAnimations(){
-    if(color == "red"){
-        player.animations.play('red_right');
-    }
-    else if(color == "blue"){
-        player.animations.play('blue_right');
-    }
-    else if(color == "yellow"){
-        player.animations.play('yellow_right');
-    }
-    else if(color == "green"){
-        player.animations.play('green_right');
-    }
-}
-
-function update() {
- //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
-    game.physics.arcade.overlap(resizeBalloon, balloons, collectBalloon, null, this);
-    game.physics.arcade.overlap(resizeBalloon, coins, collectCoin, null, this);
-    game.physics.arcade.overlap(player, balloons, collectBalloon, null, this);
-    game.physics.arcade.overlap(player, coins, collectCoin, null, this);
-
-    //  Reset the players velocity (movement)
-    player.body.velocity.x = 0;
-    resizeBalloon.body.velocity.x = 0;
-    resizeBalloon2.body.velocity.x = 0;
-
-     if (this.cursor.up.isDown) {
-        moveUp(this.shift, this.cursor.up);
-     }
-    else if(this.cursor.down.isDown)
-    {
-       moveDown(this.shift, this.cursor.down);
-    }
-    else if (this.cursor.left.isDown)
-    {
-       moveLeft(this.shift, this.cursor.left);
-    }
-    else if (this.cursor.right.isDown) {
-       moveRight(this.shift, this.cursor.right);
-    }
-    else if(this.shift.isDown){
-        scrollBackground(true);
-        player.body.gravity.y = 0;
-        resizeBalloon.body.gravity.y = 0;
-        resizeBalloon2.body.gravity.y = 0;
-    }
-    else {
-        //  Stand still
-     if(player.y > 300)
-        {
-            player.body.velocity.y = -30;
-            resizeBalloon.body.velocity.y = -30;
-            resizeBalloon2.body.velocity.y = -30;
+    function moveUp(shift, up){
+        if(shift.isDown && up.isDown){
+            scrollBackground(true);
         }
         else {
-         player.body.velocity.y = 30;
-         resizeBalloon.body.velocity.y = 30;
-         resizeBalloon2.body.velocity.y = 30;
+            player.y -= (5+speed);
+            resizeBalloon.y -= (5+speed);
+            resizeBalloon2.y -= (5+speed);
+            scrollBackground(false);
+        }
+    }
 
-        }
+    function moveDown(shift, down){
+        if(player.y >= 490)
+        {
+            player.y = 600 - (player.height - 10);
 
-        player.animations.stop();
-
-        if (color == "red") {
-            player.frame = 3;
+        }else if(player.y < resizeBalloon.height+resizeBalloon2.height) {
+            player.y = resizeBalloon.height + resizeBalloon2.height;
         }
-        else if (color == "blue") {
-            player.frame = 7;
+        else if(shift.isDown && down.isDown){
+            player.y += (10+speed);
+            resizeBalloon.y += (10+speed);
+            resizeBalloon2.y += (10+speed);
         }
-        else if (color == "yellow") {
-            player.frame = 15;
+        else {
+            player.y += (5+speed);
+            resizeBalloon.y += (5+speed);
+            resizeBalloon2.y += (5+speed);
         }
-        else if (color == "green") {
-            player.frame = 11;
-        }
-        setBalloonColor();
+        setBalloonPosition();
         scrollBackground(false);
     }
 
-    balloonsOutOfFrame();
-    coinsOutOfFrame();
-    if(parseInt(fullY) > 600){
+    function moveLeft(shift, left){
 
-        createCoins(false);
-        createBalloons(false);
-        fullY = 0;
+        if(shift.isDown && left.isDown){
+            player.x -= (10+speed);
+            resizeBalloon.x -= (10+speed);
+            resizeBalloon2.x -= (10+speed);
+        }
+
+        //  Move to the left
+        player.x -= (5+speed);
+        resizeBalloon.x -=  (5+speed);
+        resizeBalloon2.x -=  (5+speed);
+
+        scrollBackground(false);
     }
-    if(spacedUp == true){
-        spacedSprite.visible = true;
-        filter.update();
-        loopTime -= 1;
 
-        if(loopTime < 2){
-            scaleBalloon(null, false);
-            spacedSprite.visible = false;
-            spacedUp = false;
-            loopTime = 500;
+    function moveRight(shift, right){
+        //  Move to the right
+        if (shift.isDown && right.isDown) {
+            player.x += (10+speed);
+            resizeBalloon.x += (10+speed);
+            resizeBalloon2.x += (10+speed);
+        }
+
+        player.x += (5+speed);
+        resizeBalloon.x += (5+speed);
+        resizeBalloon2.x += (5+speed);
+
+
+        scrollBackground(false);
+    }
+
+    function playerAnimations(){
+        if(color == "red"){
+            player.animations.play('red_right');
+        }
+        else if(color == "blue"){
+            player.animations.play('blue_right');
+        }
+        else if(color == "yellow"){
+            player.animations.play('yellow_right');
+        }
+        else if(color == "green"){
+            player.animations.play('green_right');
         }
     }
 
+    function update() {
+        //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
+        game.physics.arcade.overlap(resizeBalloon, balloons, collectBalloon, null, this);
+        game.physics.arcade.overlap(resizeBalloon, coins, collectCoin, null, this);
+        game.physics.arcade.overlap(player, balloons, collectBalloon, null, this);
+        game.physics.arcade.overlap(player, coins, collectCoin, null, this);
 
-}
+        //  Reset the players velocity (movement)
+        player.body.velocity.x = 0;
+        resizeBalloon.body.velocity.x = 0;
+        resizeBalloon2.body.velocity.x = 0;
 
-function scrollBackground(fast){
-
-    if(fast == true){
-       tempo = 1;
-
-   }
-    else{
-        tempo = 0;
-    }
-
-    if(spacedUp == true){
-        tempo += 15;
-    }
-
-    if(bg_start.y < 603) {
-        bg_start.y += speed + tempo;
-        fullY += speed + tempo;
-    }
-
-    bg_clouds1.y += speed + tempo;
-    bg_clouds2.y += speed + tempo;
-    fullY += speed + tempo;
-    speedText.text = 'Speed: '+ parseInt((speed + tempo)*15 ) + "km/h";
-
-    if(bg_clouds1.y >= 1200) {
-        bg_clouds1.y = -(1200 - (bg_clouds1.y - 1200));
-    }
-
-    if(bg_clouds2.y >= 1200){
-        bg_clouds2.y = -(1200-(bg_clouds2.y - 1200));
-     }
-}
-
-function balloonsOutOfFrame(){
-    for(i = 0; i < balloons.children.length; i++) {
-        balloons.children[i].y += speed + tempo;
-        if (balloons.children[i].y > 600 || balloons.children[i].x > 600) {
-            balloons.children[i].destroy();
-       }
-    }
-
-}
-
-function coinsOutOfFrame(){
-    for(i = 0; i < coins.children.length; i++) {
-        coins.children[i].y += speed + tempo;
-        if (coins.children[i].y > 600) {
-            coins.children[i].kill();
+        if (this.cursor.up.isDown) {
+            moveUp(this.shift, this.cursor.up);
         }
-    }
-
-}
-
-function setMonsterColor(){
-    if(color == "red"){
-        player.animations.play('red_left');
-    }
-    else if(color == "blue"){
-        player.animations.play('blue_left');
-    }
-    else if(color == "yellow"){
-        player.animations.play('yellow_left');
-    }
-    else if(color == "green"){
-        player.animations.play('green_left');
-    }
-}
-
-function setBalloonColor(){
-    if (color == "red") {
-        resizeBalloon.frame = 0;
-        resizeBalloon2.frame = 0;
-    }
-    else if (color == "blue") {
-        resizeBalloon.frame = 1;
-        resizeBalloon2.frame = 1;
-
-    }
-    else if (color == "yellow") {
-        resizeBalloon.frame = 3;
-        resizeBalloon2.frame = 3;
-
-    }
-    else if (color == "green") {
-        resizeBalloon.frame = 2;
-        resizeBalloon2.frame = 2;
-
-    }
-}
-
-function cleanUpBalloons(){
-    var aCleanup = [];
-    balloons.forEachDead(function(item){
-        aCleanup.push(item);
-    });
-
-    var i = aCleanup.length - 1;
-    while(i > -1)
-    {
-        var getitem = aCleanup[i];
-        getitem.destroy();
-        i--;
-    }
-}
-
-function cleanUpCoins(){
-    var aCleanup = [];
-    coins.forEachDead(function(item){
-        aCleanup.push(item);
-    });
-
-    var i = aCleanup.length - 1;
-    if(i > -1)
-    {
-        var getitem = aCleanup[i];
-        return getitem;
-    }
-}
-
-function createBalloons(start){
-    if(spacedUp == false){
-        for (var i = 0; i < 4; i++)
+        else if(this.cursor.down.isDown)
         {
-            //Zahl zwischen 1 und 100
-            randomFactorX = Math.floor((Math.random() * 100) + 1);
-            randomFactorY = Math.floor((Math.random() * 100) + 1);
+            moveDown(this.shift, this.cursor.down);
+        }
+        else if (this.cursor.left.isDown)
+        {
+            moveLeft(this.shift, this.cursor.left);
+        }
+        else if (this.cursor.right.isDown) {
+            moveRight(this.shift, this.cursor.right);
+        }
+        else if(this.shift.isDown){
+            scrollBackground(true);
+            player.body.gravity.y = 0;
+            resizeBalloon.body.gravity.y = 0;
+            resizeBalloon2.body.gravity.y = 0;
+        }
+        else {
+            //  Stand still
+            if(player.y > 300)
+            {
+                player.body.velocity.y = -30;
+                resizeBalloon.body.velocity.y = -30;
+                resizeBalloon2.body.velocity.y = -30;
+            }
+            else {
+                player.body.velocity.y = 30;
+                resizeBalloon.body.velocity.y = 30;
+                resizeBalloon2.body.velocity.y = 30;
 
-            randomX = Math.floor((Math.random() * 1000) + randomFactorX);
+            }
+
+            player.animations.stop();
+
+            if (color == "red") {
+                player.frame = 3;
+            }
+            else if (color == "blue") {
+                player.frame = 7;
+            }
+            else if (color == "yellow") {
+                player.frame = 15;
+            }
+            else if (color == "green") {
+                player.frame = 11;
+            }
+            setBalloonColor();
+            scrollBackground(false);
+        }
+
+        balloonsOutOfFrame();
+        coinsOutOfFrame();
+        if(parseInt(fullY) > 600){
+
+            createCoins(false);
+            createBalloons(false);
+            fullY = 0;
+        }
+        if(spacedUp == true){
+            spacedSprite.visible = true;
+            filter.update();
+            loopTime -= 1;
+
+            if(loopTime < 2){
+                scaleBalloon(null, false);
+                spacedSprite.visible = false;
+                spacedUp = false;
+                loopTime = 500;
+            }
+        }
+
+
+    }
+
+    function scrollBackground(fast){
+
+        if(fast == true){
+            tempo = 1;
+
+        }
+        else{
+            tempo = 0;
+        }
+
+        if(spacedUp == true){
+            tempo += 15;
+        }
+
+        if(bg_start.y < 603) {
+            bg_start.y += speed + tempo;
+            fullY += speed + tempo;
+        }
+
+        bg_clouds1.y += speed + tempo;
+        bg_clouds2.y += speed + tempo;
+        fullY += speed + tempo;
+        speedText.text = 'Speed: '+ parseInt((speed + tempo)*15 ) + "km/h";
+
+        if(bg_clouds1.y >= 1200) {
+            bg_clouds1.y = -(1200 - (bg_clouds1.y - 1200));
+        }
+
+        if(bg_clouds2.y >= 1200){
+            bg_clouds2.y = -(1200-(bg_clouds2.y - 1200));
+        }
+    }
+
+    function balloonsOutOfFrame(){
+        for(i = 0; i < balloons.children.length; i++) {
+            balloons.children[i].y += speed + tempo;
+            if (balloons.children[i].y > 600 || balloons.children[i].x > 600) {
+                balloons.children[i].destroy();
+            }
+        }
+
+    }
+
+    function coinsOutOfFrame(){
+        for(i = 0; i < coins.children.length; i++) {
+            coins.children[i].y += speed + tempo;
+            if (coins.children[i].y > 600) {
+                coins.children[i].kill();
+            }
+        }
+
+    }
+
+    function setMonsterColor(){
+        if(color == "red"){
+            player.animations.play('red_left');
+        }
+        else if(color == "blue"){
+            player.animations.play('blue_left');
+        }
+        else if(color == "yellow"){
+            player.animations.play('yellow_left');
+        }
+        else if(color == "green"){
+            player.animations.play('green_left');
+        }
+    }
+
+    function setBalloonColor(){
+        if (color == "red") {
+            resizeBalloon.frame = 0;
+            resizeBalloon2.frame = 0;
+        }
+        else if (color == "blue") {
+            resizeBalloon.frame = 1;
+            resizeBalloon2.frame = 1;
+
+        }
+        else if (color == "yellow") {
+            resizeBalloon.frame = 3;
+            resizeBalloon2.frame = 3;
+
+        }
+        else if (color == "green") {
+            resizeBalloon.frame = 2;
+            resizeBalloon2.frame = 2;
+
+        }
+    }
+
+    function cleanUpBalloons(){
+        var aCleanup = [];
+        balloons.forEachDead(function(item){
+            aCleanup.push(item);
+        });
+
+        var i = aCleanup.length - 1;
+        while(i > -1)
+        {
+            var getitem = aCleanup[i];
+            getitem.destroy();
+            i--;
+        }
+    }
+
+    function cleanUpCoins(){
+        var aCleanup = [];
+        coins.forEachDead(function(item){
+            aCleanup.push(item);
+        });
+
+        var i = aCleanup.length - 1;
+        if(i > -1)
+        {
+            var getitem = aCleanup[i];
+            return getitem;
+        }
+    }
+
+    function createBalloons(start) {
+        if (spacedUp == false) {
+            randomX = Math.floor((Math.random() * 100) + 1);
+            randomFactorY = Math.floor((Math.random() * 100) + 1);
             randomY = Math.floor(-1 * ((Math.random() * 1000) + randomFactorY));
 
-            if(randomX > 600){
-                randomX -= (randomX-600);
-            }
+            for (var i = 0; i < 4; i++) {
+                //Zahl zwischen 1 und 100
+                //randomFactorY = Math.floor((Math.random() * 100) + 1);
 
-            if(start == true){
-                randomY += 300;
-            }
+                if (randomX > 600) {
+                    randomX -= (randomX - 600);
+                }
 
-            if(i%4 == 1) {
-                var balloon = balloons.create(randomX, randomY, 'colored_balloon');
-                balloon.scale.set(0.5, 0.5);
-                balloon.animations.add('red', [0, 1, 2], true);
-                balloon.animations.play('red', 6, true);
-            }
-            else if(i%4 == 2){
-                var balloon = balloons.create(randomX, randomY, 'colored_balloon');
-                balloon.scale.set(0.5, 0.5);
-                balloon.animations.add('blue', [3,4,5], true);
-                balloon.animations.play('blue', 6, true);
-            }
-            else if(i%4 == 3){
-                var balloon = balloons.create(randomX, randomY, 'colored_balloon');
-                balloon.scale.set(0.5, 0.5);
-                balloon.animations.add('yellow', [6,7,8], true);
-                balloon.animations.play('yellow', 6, true);
-            }
-            else if(i%4 == 0){
-                var balloon = balloons.create(randomX, randomY, 'colored_balloon');
-                balloon.scale.set(0.5, 0.5);
-                balloon.animations.add('green', [9,10,11], true);
-                balloon.animations.play('green', 6, true);
+                if (start == true) {
+                    randomY += 300;
+                }
+
+
+                if (i % 4 == 1) {
+                    var balloon = balloons.create(randomX, randomY, 'colored_balloon');
+                    balloon.scale.set(0.5, 0.5);
+                    balloon.animations.add('red', [0, 1, 2], true);
+                    balloon.animations.play('red', 6, true);
+                }
+                else if (i % 4 == 2) {
+                    var balloon = balloons.create(randomX, randomY, 'colored_balloon');
+                    balloon.scale.set(0.5, 0.5);
+                    balloon.animations.add('blue', [3, 4, 5], true);
+                    balloon.animations.play('blue', 6, true);
+                }
+                else if (i % 4 == 3) {
+                    var balloon = balloons.create(randomX, randomY, 'colored_balloon');
+                    balloon.scale.set(0.5, 0.5);
+                    balloon.animations.add('yellow', [6, 7, 8], true);
+                    balloon.animations.play('yellow', 6, true);
+                }
+                else if (i % 4 == 0) {
+                    var balloon = balloons.create(randomX, randomY, 'colored_balloon');
+                    balloon.scale.set(0.5, 0.5);
+                    balloon.animations.add('green', [9, 10, 11], true);
+                    balloon.animations.play('green', 6, true);
+                }
+                randomX = randomX + 150;
+                randomY = randomY - 150;
             }
         }
     }
 
+    function createCoins(start) {
 
-}
+        if (spacedUp == true && loopTime > 50) {
+            count = 15;
 
-function createCoins(start) {
+            for (k = 0; k < count; k++) {
 
-    if (spacedUp == true && loopTime > 50) {
-        count = 15;
-
-        for (k = 0; k < count; k++) {
-
-            for (j = 0; j < count; j++) {
+                for (j = 0; j < count; j++) {
 
                     var coin = coins.create((j * 40), ((k * 40) - 600), 'coin');
                     coin.scale.set(0.2, 0.2);
+                }
             }
         }
-    }
-    else{
-        var transX = 30;
+        else{
+            var transX = 30;
 
-        var gameWidth = 600 - transX;
-        var pattern1Width = 160;
-        var pattern2Width = 120;
-        var pattern3Width = 240;
-        var pattern4Width = 150;
-        var pattern5Width = 200;
-        var pattern6Width = 120;
-        var before = 0;
+            var gameWidth = 600 - transX;
+            var pattern1Width = 160;
+            var pattern2Width = 120;
+            var pattern3Width = 240;
+            var pattern4Width = 150;
+            var pattern5Width = 200;
+            var pattern6Width = 120;
+            var before = 0;
 
-        while(gameWidth > 0) {
+            while(gameWidth > 0) {
 
-            var randomPattern = game.rnd.integerInRange(1, 6);
-            if ((randomPattern == before) == false) {
+                var randomPattern = game.rnd.integerInRange(1, 6);
+                if ((randomPattern == before) == false) {
 
-                if ((randomPattern == 1) && (gameWidth > (pattern1Width + transX) )) {
-                    randomY = game.rnd.integerInRange(pattern1Width, (400 - pattern1Width) );
+                    if ((randomPattern == 1) && (gameWidth > (pattern1Width + transX) )) {
+                        randomY = game.rnd.integerInRange(pattern1Width, (400 - pattern1Width) );
 
-                    coinPattern1(transX, randomY, start);
-                    gameWidth - pattern1Width;
-                    transX += pattern1Width;
+                        coinPattern1(transX, randomY, start);
+                        gameWidth - pattern1Width;
+                        transX += pattern1Width;
+                    }
+                    else if ((randomPattern == 2) && ( gameWidth > (pattern2Width + transX) )) {
+                        randomY = game.rnd.integerInRange(pattern2Width, (400 - pattern2Width) );
+
+                        coinPattern2(transX, randomY, start);
+                        gameWidth - pattern2Width;
+                        transX += pattern1Width;
+                    }
+                    else if ((randomPattern == 3) && ( gameWidth > (pattern3Width  + transX) ) ) {
+                        randomY = game.rnd.integerInRange(pattern3Width, (400 - pattern3Width) );
+
+                        coinPattern3(transX, randomY, start);
+                        gameWidth - pattern3Width;
+                        transX += pattern3Width;
+                    }
+                    else if ((randomPattern = 4) && ( gameWidth > (pattern4Width + transX) ) ) {
+                        randomY = game.rnd.integerInRange(pattern4Width, (400 - pattern4Width) );
+
+                        coinPattern4(transX, randomY, start);
+                        gameWidth - pattern4Width;
+                        transX += pattern4Width;
+                    }
+                    else if ((randomPattern = 5) && ( gameWidth > (pattern5Width + transX) ) ) {
+                        randomY = game.rnd.integerInRange(pattern5Width, (400 - pattern5Width) );
+
+                        coinPattern5(transX, randomY, start);
+                        gameWidth - pattern5Width;
+                        transX += pattern5Width;
+
+                    }
+                    else if ((randomPattern = 6) && ( gameWidth > (pattern6Width + transX) ) ) {
+                        randomY = game.rnd.integerInRange(pattern6Width, (400 - pattern6Width) );
+
+                        coinPattern6(transX, randomY, start);
+                        gameWidth - pattern6Width;
+                        transX += pattern6Width;
+                    }
+                    gameWidth -= 30;
+                    before = randomPattern;
+                    transX += 80;
                 }
-                else if ((randomPattern == 2) && ( gameWidth > (pattern2Width + transX) )) {
-                    randomY = game.rnd.integerInRange(pattern2Width, (400 - pattern2Width) );
-
-                    coinPattern2(transX, randomY, start);
-                    gameWidth - pattern2Width;
-                    transX += pattern1Width;
-                }
-                else if ((randomPattern == 3) && ( gameWidth > (pattern3Width  + transX) ) ) {
-                    randomY = game.rnd.integerInRange(pattern3Width, (400 - pattern3Width) );
-
-                    coinPattern3(transX, randomY, start);
-                    gameWidth - pattern3Width;
-                    transX += pattern3Width;
-                }
-                else if ((randomPattern = 4) && ( gameWidth > (pattern4Width + transX) ) ) {
-                    randomY = game.rnd.integerInRange(pattern4Width, (400 - pattern4Width) );
-
-                    coinPattern4(transX, randomY, start);
-                    gameWidth - pattern4Width;
-                    transX += pattern4Width;
-                }
-                else if ((randomPattern = 5) && ( gameWidth > (pattern5Width + transX) ) ) {
-                    randomY = game.rnd.integerInRange(pattern5Width, (400 - pattern5Width) );
-
-                    coinPattern5(transX, randomY, start);
-                    gameWidth - pattern5Width;
-                    transX += pattern5Width;
-
-                }
-                else if ((randomPattern = 6) && ( gameWidth > (pattern6Width + transX) ) ) {
-                    randomY = game.rnd.integerInRange(pattern6Width, (400 - pattern6Width) );
-
-                    coinPattern6(transX, randomY, start);
-                    gameWidth - pattern6Width;
-                    transX += pattern6Width;
-                }
-                gameWidth -= 30;
-                before = randomPattern;
-                transX += 80;
             }
+
         }
 
     }
 
-}
+    function coinPattern1(transX, transY, start){
+        //Kreis1
+        //Breite = 160
+        //Höhe = 160
+        cx = [40, 80, 0, 120, 0, 120, 40, 80];
+        cy = [0, 0, 40, 40, 80, 80, 120, 120];
 
-
-function coinPattern1(transX, transY, start){
-    //Kreis1
-    //Breite = 160
-    //Höhe = 160
-    cx = [40, 80, 0, 120, 0, 120, 40, 80];
-    cy = [0, 0, 40, 40, 80, 80, 120, 120];
-
-    for(i = 0; i < 8; i++){
+        for(i = 0; i < 8; i++){
 
             x = parseInt(cx[i])+parseInt(transX);
             y = parseInt(cy[i])+parseInt(transY);
 
-        if(start == false){
-            y -= 600;
+            if(start == false){
+                y -= 600;
+            }
+
+            var coin = coins.create(x, y, 'coin');
+            coin.scale.set(0.2, 0.2);
+            coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
+            coin.animations.play('spin', 10, true);
+
         }
-
-        var coin = coins.create(x, y, 'coin');
-        coin.scale.set(0.2, 0.2);
-        coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
-        coin.animations.play('spin', 10, true);
-
     }
-}
 
-function coinPattern2(transX, transY, start){
-    //Kreis2 - oval vertikal
-    //Breite = 120
-    //Höhe = 200
-    cx = [40, 0, 80, 0, 80, 0, 80, 40];
-    cy = [0, 40, 40, 80, 80, 120, 120, 160];
+    function coinPattern2(transX, transY, start){
+        //Kreis2 - oval vertikal
+        //Breite = 120
+        //Höhe = 200
+        cx = [40, 0, 80, 0, 80, 0, 80, 40];
+        cy = [0, 40, 40, 80, 80, 120, 120, 160];
 
-    for(i = 0; i < 8; i++){
+        for(i = 0; i < 8; i++){
 
             x = parseInt(cx[i])+parseInt(transX);
             y = parseInt(cy[i])+parseInt(transY);
@@ -803,17 +802,17 @@ function coinPattern2(transX, transY, start){
             coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
             coin.animations.play('spin', 10, true);
 
+        }
     }
-}
 
-function coinPattern3(transX, transY, start){
-    //Kreis3 - oval horizontal
-    //Breite = 240
-    //Höhe = 120
-    var cx = [40, 80, 120, 160, 0, 200, 40, 80, 120, 160];
-    var cy = [0, 0, 0, 0, 40, 40, 80, 80, 80, 80];
+    function coinPattern3(transX, transY, start){
+        //Kreis3 - oval horizontal
+        //Breite = 240
+        //Höhe = 120
+        var cx = [40, 80, 120, 160, 0, 200, 40, 80, 120, 160];
+        var cy = [0, 0, 0, 0, 40, 40, 80, 80, 80, 80];
 
-    for(i = 0; i < 10; i++){
+        for(i = 0; i < 10; i++){
 
             x = parseInt(cx[i])+parseInt(transX);
             y = parseInt(cy[i])+parseInt(transY);
@@ -825,16 +824,16 @@ function coinPattern3(transX, transY, start){
             coin.scale.set(0.2, 0.2);
             coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
             coin.animations.play('spin', 10, true);
+        }
     }
-}
 
-function coinPattern4(transX, transY, start){
-    //Buchstabe I
-    //Breite = 40
-    //Höhe = 240
-    var cy = [0, 80, 120, 160, 200];
+    function coinPattern4(transX, transY, start){
+        //Buchstabe I
+        //Breite = 40
+        //Höhe = 240
+        var cy = [0, 80, 120, 160, 200];
 
-    for(i = 0; i < 5; i++){
+        for(i = 0; i < 5; i++){
 
             x = parseInt(0)+parseInt(transX);
             y = parseInt(cy[i])+parseInt(transY);
@@ -847,41 +846,41 @@ function coinPattern4(transX, transY, start){
             coin.scale.set(0.2, 0.2);
             coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
             coin.animations.play('spin', 10, true);
-    }
-}
-
-function coinPattern5(transX, transY, start){
-    //Buchstabe T
-    //Breite = 200
-    //Höhe = 200
-    var cx = [0, 40, 80, 120, 160, 80, 80, 80, 80];
-    var cy = [0, 0, 0, 0, 0, 0, 40, 80, 120, 160];
-
-    for(i = -1; i < 9; i++) {
-
-        x = parseInt(cx[i]) + parseInt(transX);
-        y = parseInt(cy[i]) + parseInt(transY);
-
-        if (start == false) {
-            y -= 600;
         }
-
-        var coin = coins.create(x, y, 'coin');
-        coin.scale.set(0.2, 0.2);
-        coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
-        coin.animations.play('spin', 10, true);
     }
-}
 
-function coinPattern6(transX, transY, start){
-    //Buchstabe E
-    //Breite = 120
-    //Höhe = 200
+    function coinPattern5(transX, transY, start){
+        //Buchstabe T
+        //Breite = 200
+        //Höhe = 200
+        var cx = [0, 40, 80, 120, 160, 80, 80, 80, 80];
+        var cy = [0, 0, 0, 0, 0, 0, 40, 80, 120, 160];
 
-    var cx = [0, 40, 80, 0, 0, 40, 80, 0, 0, 40, 80,];
-    var cy = [0, 0, 0, 40, 80, 80, 80, 120, 160, 160, 160];
+        for(i = -1; i < 9; i++) {
 
-    for(i = -1; i < 11; i++){
+            x = parseInt(cx[i]) + parseInt(transX);
+            y = parseInt(cy[i]) + parseInt(transY);
+
+            if (start == false) {
+                y -= 600;
+            }
+
+            var coin = coins.create(x, y, 'coin');
+            coin.scale.set(0.2, 0.2);
+            coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
+            coin.animations.play('spin', 10, true);
+        }
+    }
+
+    function coinPattern6(transX, transY, start){
+        //Buchstabe E
+        //Breite = 120
+        //Höhe = 200
+
+        var cx = [0, 40, 80, 0, 0, 40, 80, 0, 0, 40, 80,];
+        var cy = [0, 0, 0, 40, 80, 80, 80, 120, 160, 160, 160];
+
+        for(i = -1; i < 11; i++){
 
             x = parseInt(cx[i])+parseInt(transX);
             y = parseInt(cy[i])+parseInt(transY);
@@ -895,143 +894,143 @@ function coinPattern6(transX, transY, start){
             coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
             coin.animations.play('spin', 10, true);
         }
-}
-
-function collectBalloon (player, balloon) {
-
-    if(color == balloon.animations.name){
-        scaleBalloon(true, true);
-        speed += 0.2;
-    }
-    else{
-        scaleBalloon(false, true);
-        speed -= 0.05;
     }
 
-    if(size < 0.1){
-        quitGame();
-    }
+    function collectBalloon (player, balloon) {
 
-    // Removes the star from the screen
-    this.balloonSound.play();
-    balloon.destroy();
-    cleanUpBalloons();
-    //  Add and update the score
-    score += 10;
-    scoreText.text = 'Score: ' + parseInt(score);
-    speedText.text = 'Speed: '+ parseInt((speed + tempo)*15 ) + "km/h";
-
-
-}
-
-function scaleBalloon(bigger, normal){
-    if(normal == true) {
-
-        if (bigger == true) {
-            size += 0.1;
-
-        }
-        else {
-            size -= 0.1;
-        }
-    }
-    else{
-         size = 0.4;
-    }
-
-    if(size > 0.1){
-        resizeBalloon.scale.set(size, size);
-        resizeBalloon.x = (player.x+73) - parseFloat(resizeBalloon.width/2);
-        resizeBalloon.y = (player.y - 29) - resizeBalloon.height;
-    }
-
-
-    if(size > 0.9){
-        boostCoins();
-    }
-}
-
-function boostCoins(){
-    spacedUp = true;
-}
-
-function collectCoin (player, coin) {
-
-    // Removes the star from the screen
-    coin.destroy();
-    this.coinSound.play();
-    console.log("desrtoyed");
-    //cleanUpCoins();
-    //  Add and update the score
-    score += speed*2;
-    scoreText.text = 'Score: ' + parseInt(score);
-   }
-
-function quitGame(){
-    document.getElementById("over").innerHTML = "GAME OVER!";
-    save();
-    sort();
-    load();
-    game.destroy();
-
-}
-
-function save() {
-    var key = "player" + (parseInt(window.localStorage.length)+1);
-    var data = parseInt(score);
-    window.localStorage.setItem(key, data);
-}
-
-function load() {
-    var i = 1;
-    var key = window.localStorage.key(i);
-    var player1 = window.localStorage.getItem(key);
-    i+=1;
-    key = window.localStorage.key(i);
-    var player2 = window.localStorage.getItem(key);
-
-    i+=1;
-    key = window.localStorage.key(i);
-    var player3 = window.localStorage.getItem(key);
-
-    i+=1;
-    key = window.localStorage.key(i);
-    var player4 = window.localStorage.getItem(key);
-
-    i+=1;
-    key = window.localStorage.key(i);
-    var player5 = window.localStorage.getItem(key);
-
-    document.getElementById("highscore").innerHTML = "<br/> Score: " + parseInt(score) +" <br/> 1: " + player1 + " <br/> 2: " + player2 + " <br/> 3: " + player3 + " <br/> 4: " + player4 + " <br/> 5: " + player5;
-}
-
-
-
-function sort() {
-    for (i = 1; i <= window.localStorage.length; i++) {
-        var key = window.localStorage.key(i);
-        var temp = window.localStorage.getItem(key);
-
-        if(i > 5){
-            window.localStorage.removeItem(key);
+        if(color == balloon.animations.name){
+            scaleBalloon(true, true);
+            speed += 0.2;
         }
         else{
+            scaleBalloon(false, true);
+            speed -= 0.05;
+        }
 
-            for(j = 1; j <= window.localStorage.length; j++) {
+        if(size < 0.1){
+            quitGame();
+        }
+
+        // Removes the star from the screen
+        this.balloonSound.play();
+        balloon.destroy();
+        cleanUpBalloons();
+        //  Add and update the score
+        score += 10;
+        scoreText.text = 'Score: ' + parseInt(score);
+        speedText.text = 'Speed: '+ parseInt((speed + tempo)*15 ) + "km/h";
+
+
+    }
+
+    function scaleBalloon(bigger, normal){
+        if(normal == true) {
+
+            if (bigger == true) {
+                size += 0.1;
+
+            }
+            else {
+                size -= 0.1;
+            }
+        }
+        else{
+            size = 0.4;
+        }
+
+        if(size > 0.1){
+            resizeBalloon.scale.set(size, size);
+            resizeBalloon.x = (player.x+73) - parseFloat(resizeBalloon.width/2);
+            resizeBalloon.y = (player.y - 29) - resizeBalloon.height;
+        }
+
+
+        if(size > 0.9){
+            boostCoins();
+        }
+    }
+
+    function boostCoins(){
+        spacedUp = true;
+    }
+
+    function collectCoin (player, coin) {
+
+        // Removes the star from the screen
+        coin.destroy();
+        this.coinSound.play();
+        console.log("desrtoyed");
+        //cleanUpCoins();
+        //  Add and update the score
+        score += speed*2;
+        scoreText.text = 'Score: ' + parseInt(score);
+    }
+
+    function quitGame(){
+        document.getElementById("over").innerHTML = "GAME OVER!";
+        save();
+        sort();
+        load();
+        game.destroy();
+
+    }
+
+    function save() {
+        var key = "player" + (parseInt(window.localStorage.length)+1);
+        var data = parseInt(score);
+        window.localStorage.setItem(key, data);
+    }
+
+    function load() {
+        var i = 1;
+        var key = window.localStorage.key(i);
+        var player1 = window.localStorage.getItem(key);
+        i+=1;
+        key = window.localStorage.key(i);
+        var player2 = window.localStorage.getItem(key);
+
+        i+=1;
+        key = window.localStorage.key(i);
+        var player3 = window.localStorage.getItem(key);
+
+        i+=1;
+        key = window.localStorage.key(i);
+        var player4 = window.localStorage.getItem(key);
+
+        i+=1;
+        key = window.localStorage.key(i);
+        var player5 = window.localStorage.getItem(key);
+
+        document.getElementById("highscore").innerHTML = "<br/> Score: " + parseInt(score) +" <br/> 1: " + player1 + " <br/> 2: " + player2 + " <br/> 3: " + player3 + " <br/> 4: " + player4 + " <br/> 5: " + player5;
+    }
+
+
+
+    function sort() {
+        for (i = 1; i <= window.localStorage.length; i++) {
+            var key = window.localStorage.key(i);
+            var temp = window.localStorage.getItem(key);
+
+            if(i > 5){
+                window.localStorage.removeItem(key);
+            }
+            else{
+
+                for(j = 1; j <= window.localStorage.length; j++) {
 
                     var key2  = window.localStorage.key(i+j);
                     var temp2 = window.localStorage.getItem(key2);
                     var temp3 = window.localStorage.getItem(key);
-                //console.log("temp1: " + temp);
-                //console.log("temp2: " + temp2);
-              //  console.log("temp3: " + temp3);
+                    //console.log("temp1: " + temp);
+                    //console.log("temp2: " + temp2);
+                    //  console.log("temp3: " + temp3);
 
-                if ((parseInt(temp) < parseInt(temp2)) ||  (parseInt(temp) == null)  ) {
+                    if ((parseInt(temp) < parseInt(temp2)) ||  (parseInt(temp) == null)  ) {
                         temp = temp2;
                         temp2 = temp3;
-                    console.log("switched!!! ");
+                        console.log("switched!!! ");
 
-                }
+                    }
 
                 }
             }
