@@ -18,29 +18,47 @@
             color: red;
         }
         canvas {
+            position: absolute;
             display : block;
             margin-left: 25%;
             height: 100%;
+            margin-top: 0;
+            z-index: -1;
         }
+        #img1 {
+            position: absolute;
+            z-index: 0;
+        }
+
+        #img2 {
+            position: absolute;
+            margin-left: 25%;
+            height: 100%;
+            margin-top: 0;
+            z-index: 1;
+        }
+        button{
+            position: absolute;
+            margin: 25%;
+            margin-left: 45%;
+            height: 10%;
+            z-index: 2;
+        }
+
     </style>
 </head>
-<body>
-
+<img>
 
 <label id="over" ></label>
 <label id="highscore" ></label>
-<button onclick="startGame()">STARTEEN</button>
+<button id="startButton" onclick="startGame()" width="100">STARTEEN</button>
+<img id="img1"src="assets/countdown.gif" style="margin-top: 200px; margin-left: 500px; ">
+
+<img id="img2" src="assets/Hintergrund-Start.jpg" width="600" height="600"/>
+
 <script type="text/javascript">
 
     var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update, quitGame: quitGame});
-
-    function startGame(){
-        menu = false;
-        game.paused = false;
-
-    }
-
-
 
     function preload() {
 
@@ -59,6 +77,8 @@
         game.load.spritesheet('resizeBalloon', 'assets/SingleCollectBalloons.png', 150, 150, 4);
         game.load.spritesheet('resizeBalloon2', 'assets/SingleCollectBalloonsEnd.png', 75, 50, 1);
 
+        game.load.spritesheet('resizeBalloon', 'assets/resizeBalloons.png', 144, 188, 4);
+        game.load.spritesheet('resizeBalloon2', 'assets/resizeBalloons2.png', 40, 144, 4);
         game.load.spritesheet('colored_balloon', 'assets/collectBalloons.png', 150,225, 12);
         game.load.spritesheet('dude', 'assets/Monster_Sprite.png', 100, 100, 16);
         game.load.spritesheet('coin', 'assets/muenze.png', 200, 200, 8);
@@ -94,21 +114,20 @@
     var countCoins = 20;
     var loopTime = 500;
     var fullY = 0;
-<<<<<<< HEAD
     var menu = true;
 
+    function startGame(){
+        var introImage = document.getElementById("img2");
+        var button = document.getElementById("startButton");
+        introImage.style.visibility = "hidden";
+        startButton.style.visibility = "hidden";
+    }
+
     function create() {
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
-=======
-    var countdown = false;
-    
-    function create() {
-        //  We're going to be using physics, so enable the Arcade Physics system
-        game.physics.startSystem(Phaser.Physics.ARCADE);
+    var counterEnd = false
 
-
->>>>>>> origin/master
         createBackgrounds();
         createFilter();
 
@@ -171,6 +190,7 @@
 
 
     }
+
     function playState() {
         game.state.start('play');
     }
@@ -467,35 +487,32 @@
         }
     }
 
-    function countDown(secs){
-        var element = document.getElementById(elem);
-        element.innerHTML = "<b>Get ready</b> <p><h1>"+secs+"</h1></p>";
-        if(secs < 1){
+    function timerCount(secs){
+        if(secs < 0){
             clearTimeout(timer);
-            element.innerHTML = '<h1>Go!</h1>';
+            counterEnd = true;
+            this.game.paused = false;
+            //document.getElementBy("intro").innerHTML = "style='z-index: -1;'";
         }
         secs--;
-        var timer = setTimeout('countDown('+secs+')',100);
+        var timer = setTimeout('timerCount('+secs+')',1000);
     }
-    function update() {
-<<<<<<< HEAD
+    /*function update() {
         if(menu == true){
             game.paused = true;
             drawMenu();
             menu = false;
         }
-
+*/
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
-=======
-        this.game.lockRender = true;
 
-        if (this.game.lockRender == true) {
+    function update() {
+        if(counterEnd == false) {
+            this.game.paused = true;
+            timerCount(1);
         }
-        countDown(18);
-    }
 
          //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
->>>>>>> origin/master
         game.physics.arcade.overlap(resizeBalloon, balloons, collectBalloon, null, this);
         game.physics.arcade.overlap(resizeBalloon, coins, collectCoin, null, this);
         game.physics.arcade.overlap(player, balloons, collectBalloon, null, this);
@@ -579,8 +596,6 @@
                 loopTime = 500;
             }
         }
-
-
     }
 
     function scrollBackground(fast){
@@ -804,26 +819,11 @@
                         transX += pattern3Width;
                     }
                     else if ((randomPattern = 4) && ( gameWidth > (pattern4Width + transX) ) ) {
-                        randomY = game.rnd.integerInRange(pattern4Width, (400 - pattern4Width) );
+                        randomY = game.rnd.integerInRange(pattern4Width, (400 - pattern4Width));
 
                         coinPattern4(transX, randomY, start);
                         gameWidth - pattern4Width;
                         transX += pattern4Width;
-                    }
-                    else if ((randomPattern = 5) && ( gameWidth > (pattern5Width + transX) ) ) {
-                        randomY = game.rnd.integerInRange(pattern5Width, (400 - pattern5Width) );
-
-                        coinPattern5(transX, randomY, start);
-                        gameWidth - pattern5Width;
-                        transX += pattern5Width;
-
-                    }
-                    else if ((randomPattern = 6) && ( gameWidth > (pattern6Width + transX) ) ) {
-                        randomY = game.rnd.integerInRange(pattern6Width, (400 - pattern6Width) );
-
-                        coinPattern6(transX, randomY, start);
-                        gameWidth - pattern6Width;
-                        transX += pattern6Width;
                     }
                     gameWidth -= 30;
                     before = randomPattern;
@@ -874,7 +874,6 @@
             if(start == false){
                 y -= 600;
             }
-
 
             var coin = coins.create(x, y, 'coin');
             coin.scale.set(0.2, 0.2);
@@ -928,53 +927,6 @@
         }
     }
 
-    function coinPattern5(transX, transY, start){
-        //Buchstabe T
-        //Breite = 200
-        //Höhe = 200
-        var cx = [0, 40, 80, 120, 160, 80, 80, 80, 80];
-        var cy = [0, 0, 0, 0, 0, 0, 40, 80, 120, 160];
-
-        for(i = -1; i < 9; i++) {
-
-            x = parseInt(cx[i]) + parseInt(transX);
-            y = parseInt(cy[i]) + parseInt(transY);
-
-            if (start == false) {
-                y -= 600;
-            }
-
-            var coin = coins.create(x, y, 'coin');
-            coin.scale.set(0.2, 0.2);
-            coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
-            coin.animations.play('spin', 10, true);
-        }
-    }
-
-    function coinPattern6(transX, transY, start){
-        //Buchstabe E
-        //Breite = 120
-        //Höhe = 200
-
-        var cx = [0, 40, 80, 0, 0, 40, 80, 0, 0, 40, 80,];
-        var cy = [0, 0, 0, 40, 80, 80, 80, 120, 160, 160, 160];
-
-        for(i = -1; i < 11; i++){
-
-            x = parseInt(cx[i])+parseInt(transX);
-            y = parseInt(cy[i])+parseInt(transY);
-
-            if(start == false){
-                y -= 600;
-            }
-
-            var coin = coins.create(x, y, 'coin');
-            coin.scale.set(0.2, 0.2);
-            coin.animations.add('spin', [0, 1, 2, 3, 4, 5, 6, 7], true);
-            coin.animations.play('spin', 10, true);
-        }
-    }
-
     function collectBalloon (player, balloon) {
         if(color == balloon.animations.name){
             scaleBalloon(true, true);
@@ -998,8 +950,6 @@
         score += 10;
         scoreText.text = 'Score: ' + parseInt(score);
         speedText.text = 'Speed: '+ parseInt((speed + tempo)*15 ) + "km/h";
-
-
     }
 
     function scaleBalloon(bigger, normal){
@@ -1048,73 +998,11 @@
 
     function quitGame(){
         document.getElementById("over").innerHTML = "GAME OVER!";
-        save();
-        sort();
-        load();
+        document.getElementById("highscore").innerHTML = "<br/> Score: " + parseInt(score) +" <br/> 1: " + player1 + " <br/> 2: " + player2 + " <br/> 3: " + player3 + " <br/> 4: " + player4 + " <br/> 5: " + player5;
         game.destroy();
 
     }
 
-    function save() {
-        var key = "player" + (parseInt(window.localStorage.length)+1);
-        var data = parseInt(score);
-        window.localStorage.setItem(key, data);
-    }
-
-    function load() {
-        var i = 1;
-        var key = window.localStorage.key(i);
-        var player1 = window.localStorage.getItem(key);
-        i+=1;
-        key = window.localStorage.key(i);
-        var player2 = window.localStorage.getItem(key);
-
-        i+=1;
-        key = window.localStorage.key(i);
-        var player3 = window.localStorage.getItem(key);
-
-        i+=1;
-        key = window.localStorage.key(i);
-        var player4 = window.localStorage.getItem(key);
-
-        i+=1;
-        key = window.localStorage.key(i);
-        var player5 = window.localStorage.getItem(key);
-
-        document.getElementById("highscore").innerHTML = "<br/> Score: " + parseInt(score) +" <br/> 1: " + player1 + " <br/> 2: " + player2 + " <br/> 3: " + player3 + " <br/> 4: " + player4 + " <br/> 5: " + player5;
-    }
-
-
-
-    function sort() {
-        for (i = 1; i <= window.localStorage.length; i++) {
-            var key = window.localStorage.key(i);
-            var temp = window.localStorage.getItem(key);
-
-            if(i > 5){
-                window.localStorage.removeItem(key);
-            }
-            else{
-
-                for(j = 1; j <= window.localStorage.length; j++) {
-
-                    var key2  = window.localStorage.key(i+j);
-                    var temp2 = window.localStorage.getItem(key2);
-                    var temp3 = window.localStorage.getItem(key);
-                    //console.log("temp1: " + temp);
-                    //console.log("temp2: " + temp2);
-                    //  console.log("temp3: " + temp3);
-
-                    if ((parseInt(temp) < parseInt(temp2)) ||  (parseInt(temp) == null)  ) {
-                        temp = temp2;
-                        temp2 = temp3;
-                    }
-
-                }
-            }
-            window.localStorage.setItem(key, temp);
-        }
-    }
 </script>
 
 </body>
