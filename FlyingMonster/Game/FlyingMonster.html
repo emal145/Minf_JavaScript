@@ -115,18 +115,19 @@
     var loopTime = 500;
     var fullY = 0;
     var menu = true;
+    var counterEnd = false
 
     function startGame(){
         var introImage = document.getElementById("img2");
         var button = document.getElementById("startButton");
         introImage.style.visibility = "hidden";
         startButton.style.visibility = "hidden";
+        timerCount(1);
     }
 
     function create() {
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
-    var counterEnd = false
 
         createBackgrounds();
         createFilter();
@@ -509,7 +510,6 @@
     function update() {
         if(counterEnd == false) {
             this.game.paused = true;
-            timerCount(1);
         }
 
          //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
